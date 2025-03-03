@@ -1638,33 +1638,33 @@ class Enshutsu():
 
     def tuto_rial(self, bg): #済
         global tuto_ind
-        sousa = pygame.image.load("そうさせつめい.png")        
+        sousa = pygame.image.load("sousa.png")        
         #self.text_draw_left(("[←]      ") + str(tuto_ind) + ("/3      [→]"), (255,255,255), 25, 35,300, bg)
         bg.blit(sousa, (0,0))
 
         if tuto_ind == 1:
-            sousa1 = pygame.image.load("そうさせつめい1.png")
+            sousa1 = pygame.image.load("sousa1.png")
             bg.blit(sousa1, (-1,0))
 
         if tuto_ind == 2:
-            sousa2 = pygame.image.load("そうさせつめい2.png")
+            sousa2 = pygame.image.load("sousa2.png")
             bg.blit(sousa2, (0,0))
 
         if tuto_ind == 3:
-            sousa3 = pygame.image.load("そうさせつめい3.png")
+            sousa3 = pygame.image.load("sousa3.png")
             bg.blit(sousa3, (0,0))
 
     def config(self, bg): #済
         global SOUSA_MODE, con_ind
-        con = pygame.image.load("こんふぃぐ.png")
+        con = pygame.image.load("config.png")
         bg.blit(con, (0,0))
 
         if SOUSA_MODE == 1:
-            con1 = pygame.image.load("こんふぃぐ1.png")
+            con1 = pygame.image.load("config1.png")
             bg.blit(con1, (0,2))
 
         if SOUSA_MODE == 2:
-            con2 = pygame.image.load("こんふぃぐ2.png")
+            con2 = pygame.image.load("config2.png")
             bg.blit(con2, (0,0))
 
         #if SOUSA_MODE == 3:
