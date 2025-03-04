@@ -2093,23 +2093,26 @@ async def main():
                     mode_flag = 3
                 if mode_flag > 3:
                     mode_flag = 1
-            
-                if key[pygame.K_SPACE] == True:       
-                    if mode_flag == 1:
-                        stage = 1
-                        fall_flag = False
-                        t_key = 50
-                        index = 5
+                try:
+                    if key[pygame.K_SPACE] == True:       
+                        if mode_flag == 1:
+                            stage = 1
+                            fall_flag = False
+                            t_key = 50
+                            index = 5
 
-                    elif mode_flag == 2:
-                        t_key = 10
-                        tuto_ind = 1
-                        index = 8
+                        elif mode_flag == 2:
+                            t_key = 10
+                            tuto_ind = 1
+                            index = 8
 
-                    elif mode_flag == 3:
-                        t_key = 10
-                        tuto_ind = 1
-                        index = 9
+                        elif mode_flag == 3:
+                            t_key = 10
+                            tuto_ind = 1
+                            index = 9
+                except Exception as err:
+                    En.text_draw_center(err, (255,255,255), 25, 240, 100, screen) 
+                 
 
         if index == 1: #済
             if tmr_music == 1:
