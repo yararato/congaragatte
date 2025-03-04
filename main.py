@@ -1647,7 +1647,7 @@ class Enshutsu():
         
         if tuto_ind == 1:
             bg.blit(sousa, (0,0))
-            #fuukei = pygame.image.load("プレイ風景.png")          
+            fuukei = pygame.image.load("プレイ風景.png")          
             img_s_f = pygame.transform.scale(fuukei,[180, 135])
             bg.blit(img_s_f, (50,150))
 
