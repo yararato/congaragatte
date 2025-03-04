@@ -1644,7 +1644,7 @@ class Enshutsu():
     def tuto_rial(self, bg): #済
         global tuto_ind
 
-        bg.blit(self.sousa, (0,0)                
+        #bg.blit(self.sousa, (0,0)                
         try:
             if tuto_ind == 1:
                 #sousa1 = pygame.image.load("sousa1.png")
