@@ -1642,53 +1642,24 @@ class Enshutsu():
         sousa1 = pygame.image.load("sousa1.png")
         sousa2 = pygame.image.load("sousa2.png")
         sousa3 = pygame.image.load("sousa3.png")
-        bg.blit(sousa, (0,0)
-        self.text_draw_left(("[←]      ") + str(tuto_ind) + ("/3      [→]"), (255,255,255), 25, 35,300, bg)
-        
-        
-        if tuto_ind == 1:
-            bg.blit(sousa, (0,0))
-            #fuukei = pygame.image.load("プレイ風景.png")          
-            #img_s_f = pygame.transform.scale(fuukei,[180, 135])
-            #bg.blit(img_s_f, (50,150))
+        bg.blit(sousa, (0,0)                
+        try:
+            if tuto_ind == 1:
+                sousa1 = pygame.image.load("sousa1.png")
+                bg.blit(sousa1, (-1,0))
 
-            self.text_draw_left("「ジャンプ」と", (255,255,255), 20, 25,40,bg)
-            self.text_draw_left("「反対ごっこ」を駆使して", (255,255,255), 20, 25,75,bg)
-            self.text_draw_left("アイドルの道を駆け抜けよう！", (255,255,255), 20, 25,110,bg)
+            if tuto_ind == 2:
+                sousa2 = pygame.image.load("sousa2.png")
+                bg.blit(sousa2, (0,0))
 
-            self.text_draw_left(("        ") + str(tuto_ind) + ("/3      [→]"), (255,255,255), 25, 35,300, bg)
+            if tuto_ind == 3:
+                sousa3 = pygame.image.load("sousa3.png")
+                bg.blit(sousa3, (0,0))
 
-        if tuto_ind == 2:
-            bg.blit(sousa, (0,0))
-            fuukei = pygame.image.load("block_yellow_2_2.png")          
-            
-            bg.blit(fuukei, (240,195))
+            self.text_draw_left(("[←]      ") + str(tuto_ind) + ("/3      [→]"), (255,255,255), 25, 35,300, bg)
 
-            self.text_draw_left("ステージは強制スクロール", (255,255,255), 20, 25,40,bg)
-            self.text_draw_left("アイドル達は自動で走ります", (255,255,255), 20, 25,75,bg)
-            self.text_draw_left("穴を飛び越え黄色の", (255,255,255), 20, 25,110,bg)
-            self.text_draw_left("ゴールマスへ向かおう!", (255,255,255), 20, 25,145,bg)
-
-            self.text_draw_left("アルストロメリアの", (255,255,255), 20, 25,200,bg)
-            self.text_draw_left("3人をゴールさせたらクリア!", (255,255,255), 20, 25,235,bg)
-
-            self.text_draw_left(("[←]    ") + str(tuto_ind) + ("/3      [→]"), (255,255,255), 25, 35,300, bg)
-
-        if tuto_ind == 3:
-            bg.blit(sousa, (0,0))
-
-            self.text_draw_left("デフォルト操作", (255,255,255), 25, 25,20,bg)
-            self.text_draw_left("※CONFIGで変更可能", (255,255,255), 20, 25,55,bg)
-
-            self.text_draw_left("[D] 甘奈が反対ごっこ", (255,255,255), 20, 25,85,bg)
-            self.text_draw_left("[S] 千雪が反対ごっこ", (255,255,255), 20, 25,120,bg)
-            self.text_draw_left("[A] 甜花が反対ごっこ", (255,255,255), 20, 25,155,bg)
-
-            self.text_draw_left("[J] 甘奈がジャンプ", (255,255,255), 20, 25,200,bg)
-            self.text_draw_left("[K] 千雪がジャンプ", (255,255,255), 20, 25,230,bg)
-            self.text_draw_left("[L] 甜花がジャンプ", (255,255,255), 20, 25,260,bg)
-
-            self.text_draw_left(("[←]    ") + str(tuto_ind) + ("/3      "), (255,255,255), 25, 35,300, bg)
+        except Exception as err:
+            self.text_draw_left((err.args, (255,255,255), 25, 35,300, bg)
 
     def config(self, bg): #済
         global SOUSA_MODE, con_ind
