@@ -2136,7 +2136,7 @@ async def main():
 
                         elif mode_flag == 2:
                             t_key = 10
-                            tuto_ind = 1
+                            tuto_ind = 2
                             index = 8
 
                         elif mode_flag == 3:
@@ -2144,7 +2144,7 @@ async def main():
                             tuto_ind = 1
                             index = 9
                 except Exception as err:
-                    tuto_ind = 1
+                    
                     En.text_draw_center(err, (255,255,255), 25, 240, 100, screen) 
                  
 
