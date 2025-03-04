@@ -1562,7 +1562,7 @@ class Text_Manage():
     def text_draw(self, msg, col, size, x, y, bg):
         font = pygame.font.Font(("JF-Dot-Shinonome16.ttf"), size)
 
-        sur3 = font.render(msg, True, (0,0,0))
+        sur3 = font.render(msg, True, (255,255,255))
         sur3_rect = sur3.get_rect(center=(x+1, y+1))
         bg.blit(sur3, sur3_rect)
 
@@ -1596,7 +1596,7 @@ class Enshutsu():
     def text_draw_left(self, msg, col, size, x, y, bg):
         font = pygame.font.Font(("JF-Dot-Shinonome16.ttf"), size)
 
-        sur3 = font.render(msg, True, (0,0,0))
+        sur3 = font.render(msg, True, (255,255,255))
         bg.blit(sur3, (x+1, y+1))
 
         sur1 = font.render(msg, True, col)
@@ -1605,7 +1605,7 @@ class Enshutsu():
     def text_draw_center(self, msg, col, size, x, y, bg):
         font = pygame.font.Font(("JF-Dot-Shinonome16.ttf"), size)
         
-        sur_s = font.render(msg, True, (0,0,0))
+        sur_s = font.render(msg, True, (255,255,255))
         sur_rect_s = sur_s.get_rect(center=(x+1, y+1))
         bg.blit(sur_s, sur_rect_s)
 
@@ -1616,7 +1616,7 @@ class Enshutsu():
     def text_draw_center56(self, msg, col, size, x, y, bg):
         font = pygame.font.Font(("JF-Dot-Shinonome16.ttf"), size)
 
-        sur3 = font.render(msg, True, (0,0,0))
+        sur3 = font.render(msg, True, (255,255,255))
         sur3_rect = sur3.get_rect(center=(x+1, y+1))
         bg.blit(sur3, sur3_rect)
 
