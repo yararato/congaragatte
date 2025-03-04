@@ -1648,9 +1648,9 @@ class Enshutsu():
         
         if tuto_ind == 1:
             bg.blit(sousa, (0,0))
-            fuukei = pygame.image.load("プレイ風景.png")          
-            img_s_f = pygame.transform.scale(fuukei,[180, 135])
-            bg.blit(img_s_f, (50,150))
+            #fuukei = pygame.image.load("プレイ風景.png")          
+            #img_s_f = pygame.transform.scale(fuukei,[180, 135])
+            #bg.blit(img_s_f, (50,150))
 
             self.text_draw_left("「ジャンプ」と", (255,255,255), 20, 25,40,bg)
             self.text_draw_left("「反対ごっこ」を駆使して", (255,255,255), 20, 25,75,bg)
@@ -2136,7 +2136,7 @@ async def main():
 
                         elif mode_flag == 2:
                             t_key = 10
-                            tuto_ind = 2
+                            tuto_ind = 1
                             index = 8
 
                         elif mode_flag == 3:
@@ -2145,7 +2145,7 @@ async def main():
                             index = 9
                 except Exception as err:
                     
-                    En.text_draw_center(err, (255,255,255), 25, 240, 100, screen) 
+                    En.text_draw_center(err.args, (255,255,255), 25, 240, 100, screen) 
                  
 
         if index == 1: #済
