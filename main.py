@@ -1593,11 +1593,6 @@ class Enshutsu():
         self.last2 = pygame.image.load("last2.png")
         self.last3 = pygame.image.load("last3.png")
 
-        self.sousa = pygame.image.load("sousa.png")  
-        self.sousa1 = pygame.image.load("sousa1.png")
-        self.sousa2 = pygame.image.load("sousa2.png")
-        self.sousa3 = pygame.image.load("sousa3.png") 
-
     def text_draw_left(self, msg, col, size, x, y, bg):
         font = pygame.font.Font(("JF-Dot-Shinonome16.ttf"), size)
 
@@ -1643,25 +1638,21 @@ class Enshutsu():
 
     def tuto_rial(self, bg): #済
         global tuto_ind
+        sousa = pygame.image.load("sousa.png")        
+        #self.text_draw_left(("[←]      ") + str(tuto_ind) + ("/3      [→]"), (255,255,255), 25, 35,300, bg)
+        bg.blit(sousa, (0,0))
 
-        bg.blit(self.sousa, (0,0)                
-        
         if tuto_ind == 1:
-                #sousa1 = pygame.image.load("sousa1.png")
-            bg.blit(self.sousa1, (-1,0))
+            sousa1 = pygame.image.load("sousa1.png")
+            bg.blit(sousa1, (-1,0))
 
         if tuto_ind == 2:
-                #sousa2 = pygame.image.load("sousa2.png")
-            bg.blit(self.sousa2, (0,0))
+            sousa2 = pygame.image.load("sousa2.png")
+            bg.blit(sousa2, (0,0))
 
         if tuto_ind == 3:
-                #sousa3 = pygame.image.load("sousa3.png")
-            bg.blit(self.sousa3, (0,0))
-
-            #self.text_draw_left(("[←]      ") + str(tuto_ind) + ("/3      [→]"), (255,255,255), 25, 35,300, bg)
-
-        #except Exception as err:
-        #    self.text_draw_left((err.args, (255,255,255), 25, 35,300, bg)
+            sousa3 = pygame.image.load("sousa3.png")
+            bg.blit(sousa3, (0,0))
 
     def config(self, bg): #済
         global SOUSA_MODE, con_ind
@@ -1677,11 +1668,11 @@ class Enshutsu():
             bg.blit(con2, (0,0))
 
         #if SOUSA_MODE == 3:
-        #    con3 = pygame.image.load("こんふぃぐ3.png")
+        #    con3 = pygame.image.load("config3.png")
         #    bg.blit(con3, (0,2))
 
         #if SOUSA_MODE == 4:
-        #    con4 = pygame.image.load("こんふぃぐ4.png")
+        #    con4 = pygame.image.load("config4.png")
         #    bg.blit(con4, (0,0))
 
     def stage0(self, bg):
@@ -2055,7 +2046,6 @@ async def main():
             chk_goal_T = False
 
             StCre.__init__()
-            En.__init___()
 
             
             #index = 0
@@ -2100,27 +2090,23 @@ async def main():
                     mode_flag = 3
                 if mode_flag > 3:
                     mode_flag = 1
-                try:
-                    if key[pygame.K_SPACE] == True:       
-                        if mode_flag == 1:
-                            stage = 1
-                            fall_flag = False
-                            t_key = 50
-                            index = 5
+            
+                if key[pygame.K_SPACE] == True:       
+                    if mode_flag == 1:
+                        stage = 1
+                        fall_flag = False
+                        t_key = 50
+                        index = 5
 
-                        elif mode_flag == 2:
-                            t_key = 10
-                            tuto_ind = 1
-                            index = 8
+                    elif mode_flag == 2:
+                        t_key = 10
+                        tuto_ind = 1
+                        index = 8
 
-                        elif mode_flag == 3:
-                            t_key = 10
-                            tuto_ind = 1
-                            index = 9
-                except Exception as err:
-                    
-                    En.text_draw_center(err.args, (255,255,255), 25, 240, 100, screen) 
-                 
+                    elif mode_flag == 3:
+                        t_key = 10
+                        tuto_ind = 1
+                        index = 9
 
         if index == 1: #済
             if tmr_music == 1:
@@ -3033,7 +3019,7 @@ async def main():
 #============================================================================
             En.tuto_rial(screen)
             
-            #t_key -= 1
+            t_key -= 1
             
             if t_key <= 0:
                 t_key = 0
