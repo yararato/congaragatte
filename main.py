@@ -2055,6 +2055,7 @@ async def main():
             chk_goal_T = False
 
             StCre.__init__()
+            En.__init___()
 
             
             #index = 0
