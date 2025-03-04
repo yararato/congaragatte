@@ -1616,7 +1616,7 @@ class Enshutsu():
     def text_draw_center56(self, msg, col, size, x, y, bg):
         font = pygame.font.Font(("JF-Dot-Shinonome16.ttf"), size)
 
-        sur3 = font.render(msg, True, (0,0,0))
+        sur3 = font.render(msg, True, (255,255,255))
         sur3_rect = sur3.get_rect(center=(x+1, y+1))
         bg.blit(sur3, sur3_rect)
 
