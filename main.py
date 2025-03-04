@@ -1593,6 +1593,11 @@ class Enshutsu():
         self.last2 = pygame.image.load("last2.png")
         self.last3 = pygame.image.load("last3.png")
 
+        self.sousa = pygame.image.load("sousa.png")  
+        self.sousa1 = pygame.image.load("sousa1.png")
+        self.sousa2 = pygame.image.load("sousa2.png")
+        self.sousa3 = pygame.image.load("sousa3.png") 
+
     def text_draw_left(self, msg, col, size, x, y, bg):
         font = pygame.font.Font(("JF-Dot-Shinonome16.ttf"), size)
 
@@ -1638,25 +1643,22 @@ class Enshutsu():
 
     def tuto_rial(self, bg): #済
         global tuto_ind
-        sousa = pygame.image.load("sousa.png")  
-        sousa1 = pygame.image.load("sousa1.png")
-        sousa2 = pygame.image.load("sousa2.png")
-        sousa3 = pygame.image.load("sousa3.png")
+
         bg.blit(sousa, (0,0)                
         try:
             if tuto_ind == 1:
-                sousa1 = pygame.image.load("sousa1.png")
-                bg.blit(sousa1, (-1,0))
+                #sousa1 = pygame.image.load("sousa1.png")
+                bg.blit(self.sousa1, (-1,0))
 
             if tuto_ind == 2:
-                sousa2 = pygame.image.load("sousa2.png")
-                bg.blit(sousa2, (0,0))
+                #sousa2 = pygame.image.load("sousa2.png")
+                bg.blit(self.sousa2, (0,0))
 
             if tuto_ind == 3:
-                sousa3 = pygame.image.load("sousa3.png")
-                bg.blit(sousa3, (0,0))
+                #sousa3 = pygame.image.load("sousa3.png")
+                bg.blit(self.sousa3, (0,0))
 
-            self.text_draw_left(("[←]      ") + str(tuto_ind) + ("/3      [→]"), (255,255,255), 25, 35,300, bg)
+            #self.text_draw_left(("[←]      ") + str(tuto_ind) + ("/3      [→]"), (255,255,255), 25, 35,300, bg)
 
         except Exception as err:
             self.text_draw_left((err.args, (255,255,255), 25, 35,300, bg)
