@@ -1594,7 +1594,7 @@ class Enshutsu():
         self.last3 = pygame.image.load("last3.png")
 
     def text_draw_left(self, msg, col, size, x, y, bg):
-        font = pygame.font.Font(("JF-Dot-Shinonome16.ttf"), size)
+        font = pygame.font.Font(("JF-Dot-Izumi16B.ttf"), size)
 
         sur3 = font.render(msg, True, (0,0,0))
         bg.blit(sur3, (x+1, y+1))
@@ -1603,7 +1603,7 @@ class Enshutsu():
         bg.blit(sur1, (x, y))
 
     def text_draw_center(self, msg, col, size, x, y, bg):
-        font = pygame.font.Font(("JF-Dot-Shinonome16.ttf"), size)
+        font = pygame.font.Font(("JF-Dot-Izumi16B.ttf"), size)
         
         sur_s = font.render(msg, True, (0,0,0))
         sur_rect_s = sur_s.get_rect(center=(x+1, y+1))
@@ -1614,9 +1614,9 @@ class Enshutsu():
         bg.blit(sur1, sur1_rect)
 
     def text_draw_center56(self, msg, col, size, x, y, bg):
-        font = pygame.font.Font(("JF-Dot-Shinonome16.ttf"), size)
+        font = pygame.font.Font(("JF-Dot-Izumi16B.ttf"), size)
 
-        sur3 = font.render(msg, True, (255,255,255))
+        sur3 = font.render(msg, True, col)
         sur3_rect = sur3.get_rect(center=(x+1, y+1))
         bg.blit(sur3, sur3_rect)
 
