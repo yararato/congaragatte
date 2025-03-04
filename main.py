@@ -1645,23 +1645,23 @@ class Enshutsu():
         global tuto_ind
 
         #bg.blit(self.sousa, (0,0)                
-        try:
-            if tuto_ind == 1:
+        
+        if tuto_ind == 1:
                 #sousa1 = pygame.image.load("sousa1.png")
-                bg.blit(self.sousa1, (-1,0))
+            bg.blit(self.sousa1, (-1,0))
 
-            if tuto_ind == 2:
+        if tuto_ind == 2:
                 #sousa2 = pygame.image.load("sousa2.png")
-                bg.blit(self.sousa2, (0,0))
+            bg.blit(self.sousa2, (0,0))
 
-            if tuto_ind == 3:
+        if tuto_ind == 3:
                 #sousa3 = pygame.image.load("sousa3.png")
-                bg.blit(self.sousa3, (0,0))
+            bg.blit(self.sousa3, (0,0))
 
             #self.text_draw_left(("[←]      ") + str(tuto_ind) + ("/3      [→]"), (255,255,255), 25, 35,300, bg)
 
-        except Exception as err:
-            self.text_draw_left((err.args, (255,255,255), 25, 35,300, bg)
+        #except Exception as err:
+        #    self.text_draw_left((err.args, (255,255,255), 25, 35,300, bg)
 
     def config(self, bg): #済
         global SOUSA_MODE, con_ind
