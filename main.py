@@ -758,6 +758,9 @@ class Move_Chikiyu(Move_Amana): #済
             if stage == 6:
                 if endless_flag == False:
                     self.x_amana += 0
+                elif endless_flag == True:
+                    self.x_amana += 3
+                    self.turn_int == 1                    
             else:
                 self.x_amana += 3
                 self.turn_int == 1
@@ -1329,6 +1332,9 @@ class Move_Tenka(Move_Amana): #済
             if stage == 6:
                 if endless_flag == False:
                     self.x_amana += 0
+                elif endless_flag == True:
+                    self.x_amana += 3
+                    self.turn_int == 1                 
             else:
                 self.x_amana += 3
                 self.turn_int == 1
