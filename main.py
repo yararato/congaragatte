@@ -2652,7 +2652,7 @@ async def main():
             
             tmr += 1
             #t_key -= 1
-            if tmr % 20 < 10: 
+            if tmr % 10 < 5: 
                 pygame.draw.polygon(screen, (255,255,255), [[180,258],[180,278],[160,268]])
                 pygame.draw.polygon(screen, (255,255,255), [[450,258],[450,278],[470,268]])
 
