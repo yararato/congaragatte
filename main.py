@@ -689,7 +689,7 @@ class Move_Chikiyu(Move_Amana): #済
             bg.blit(self.stand_amana[3], (self.x_amana, self.y))
 
     def rect_x_update(self):
-        global chk_0_C, chk_goal_C, chk_Lastgoal_C, index, life, chk_goal, endless_flag
+        global chk_0_C, chk_goal_C, chk_Lastgoal_C, index, life, chk_goal, endless_flag, stage
         if chk_goal == False:
             self.speed = 1
 
@@ -760,7 +760,7 @@ class Move_Chikiyu(Move_Amana): #済
                     self.x_amana += 0
                 elif endless_flag == True:
                     self.x_amana += 3
-                    self.turn_int == 1                    
+                    self.turn_int == 1 
             else:
                 self.x_amana += 3
                 self.turn_int == 1
@@ -1334,7 +1334,7 @@ class Move_Tenka(Move_Amana): #済
                     self.x_amana += 0
                 elif endless_flag == True:
                     self.x_amana += 3
-                    self.turn_int == 1                 
+                    self.turn_int == 1 
             else:
                 self.x_amana += 3
                 self.turn_int == 1
@@ -3121,18 +3121,18 @@ async def main():
                         life += 1 
                         stage += 1
                 
-                elif endless_flag == True:             
-                    if stage%6 == 2 or stage%6 == 3:
+                elif endless_flag == True:
+                    if stage%6 == 0 or stage%6 == 1:
                         pygame.mixer.music.load("arusutoromeria.ogg")
                         S_Random.set_stage_endless(1, 5)
                         generated = S_Random.map_data
 
-                    elif stage%6 == 4 or stage%6 == 5:
+                    elif stage%6 == 2 or stage%6 == 3:
                         pygame.mixer.music.load("arusutoromeria.ogg")
                         S_Random.set_stage_endless(4, 5)
                         generated = S_Random.map_data
 
-                    elif stage%6 == 0 or stage%6 == 1:
+                    elif stage%6 == 4 or stage%6 == 5:
                         pygame.mixer.music.load("bloomy.ogg")
                         S_Random.set_stage_endless(5, 5)
                         generated = S_Random.map_data
