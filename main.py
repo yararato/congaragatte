@@ -3123,17 +3123,17 @@ async def main():
                 
                 elif endless_flag == True:
                     stage += 1                 
-                    if stage%6 == 1 or stage%6 == 2:
+                    if stage%6 == 2 or stage%6 == 3:
                         pygame.mixer.music.load("arusutoromeria.ogg")
                         S_Random.set_stage_endless(1, 5)
                         generated = S_Random.map_data
 
-                    elif stage%6 == 3 or stage%6 == 4:
+                    elif stage%6 == 4 or stage%6 == 5:
                         pygame.mixer.music.load("arusutoromeria.ogg")
                         S_Random.set_stage_endless(4, 5)
                         generated = S_Random.map_data
 
-                    elif stage%6 == 5 or stage%6 == 0:
+                    elif stage%6 == 0 or stage%6 == 1:
                         pygame.mixer.music.load("bloomy.ogg")
                         S_Random.set_stage_endless(5, 5)
                         generated = S_Random.map_data
