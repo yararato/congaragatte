@@ -3116,6 +3116,7 @@ async def main():
                         stage += 1
                 
                 elif endless_flag == True:
+                    stage += 1                 
                     if stage%6 == 1 or stage%6 == 2:
                         pygame.mixer.music.load("arusutoromeria.ogg")
                         S_Random.set_stage_endless(1, 5)
@@ -3136,7 +3137,7 @@ async def main():
                     
                     if stage == 99:
                         index = 7
-                    stage += 1  
+  
                     index = 10              
 
             Txt.text_draw("STAGE  " + str(stage), WHITE, 25, 390, 30, screen)
