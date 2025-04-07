@@ -2579,7 +2579,7 @@ async def main():
 
     #説明用
     tuto_ind = 1
-    t_key = 90
+    t_key = 30
     tmr = 0
 
     #エンディング用
