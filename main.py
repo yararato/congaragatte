@@ -2576,6 +2576,7 @@ async def main():
     stage = 1
     mode_flag = 1
     endless_flag = False
+    title_chara = 0
 
     #アイキャッチ用
     from5to1 = 60
