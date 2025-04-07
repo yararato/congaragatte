@@ -6,7 +6,11 @@ import math
 import random
 import asyncio
 
+import webbrowser
+import urllib.parse
+
 fall_flag = False #落ちたことのフラグ
+endless_flag = False
 
 chk_0_A = True
 chk_0_C = True
@@ -23,10 +27,12 @@ chk_Lastgoal_T = False #False=ゴールしていない
 
 chk_goal = False
 
-index = 1
-stage = 5
+index = 0
+stage = 1
 generated = []
 life = 3
+
+key_spc = 0
 
 enshutsu = -200
 
@@ -48,6 +54,7 @@ se_jump = None
 se_turn = None
 se_fall = None
 
+
 #=====col=====
 RED = (255, 0, 0)
 YELLOW = (255,255,128)
@@ -58,7 +65,7 @@ WHITE = (255, 255, 255)
 PINK = (255,0,192)
 
 #キャラの動き============================================
-class Move_Amana(): #済
+class Move_Amana: #済
     def __init__(self):
         self.ground = 125
         self.x_amana = 0 #甘奈の位置
@@ -123,6 +130,10 @@ class Move_Amana(): #済
 
                 pygame.image.load("amana_stand_right.png"),            
                 ]        
+        
+        self.se_jump = pygame.mixer.Sound("jump.ogg")
+        self.se_turn = pygame.mixer.Sound("turn.ogg")
+        self.se_fall = pygame.mixer.Sound("fall.ogg")
 
     def draw_chara(self, bg):
         global chk_goal_A, index
@@ -134,7 +145,7 @@ class Move_Amana(): #済
 
         self.ama_a = self.ANIMATION[self.x_amana % len(self.ANIMATION)]
     
-        if index == 1 or index == 2:
+        if index == 1 or index == 2 or index == 10:
             if chk_goal_A == False:
                 if self.turn_int == -1 and self.land == True: #左への移動時
                     bg.blit(self.run_han_amana[self.ama_a], (self.x_amana, self.y))
@@ -260,6 +271,91 @@ class Move_Amana(): #済
         if index == 4:
             self.y = self.ground - self.h 
 
+    def move_amana(self):
+        global endless_flag
+        key = pygame.key.get_pressed()
+
+        if chk_goal_A == False:
+        #ここからジャンプ
+            if self.canJump == True and self.land == True:
+                if SOUSA_MODE == 1 or SOUSA_MODE == 2:
+                    if key[pygame.K_j] == True: #<===============================================
+                        if self.y == self.ground - self.h: #150 甘奈上角のy座標 
+                            self.se_jump.play()  
+                            self.jump()
+                            self.jump_flag()
+
+                if SOUSA_MODE == 3 or SOUSA_MODE == 4:
+                    if key[pygame.K_SEMICOLON] == True: #<===============================================
+                        if self.y == self.ground - self.h: #150 甘奈上角のy座標 
+                            self.se_jump.play()  
+                            self.jump()
+                            self.jump_flag()
+
+                #落下音
+                if self.y == self.ground - self.height + 5:
+                    self.se_fall.play()
+
+        self.t_canjump -= 1
+
+        if self.t_canjump == 0:
+            self.jump_reset()
+
+
+        #ここまでジャンプ
+        
+        #反対ごっこ
+        if SOUSA_MODE == 1 or SOUSA_MODE == 3:
+            if key[pygame.K_d] == True and self.canTurn == True:  #<===============================================   
+                self.turn_chara() #反対ごっこ
+                self.turn_flag() #次の反対ごっこまでの猶予
+                self.se_turn.play()
+            
+        elif SOUSA_MODE == 2 or SOUSA_MODE == 4:
+            if key[pygame.K_a] == True and self.canTurn == True:  #<===============================================   
+                self.turn_chara() #反対ごっこ
+                self.turn_flag() #次の反対ごっこまでの猶予
+                self.se_turn.play()
+
+        if endless_flag == False:
+            if stage == 5:
+                RN_A = random.randint(1, 1000)
+                if RN_A == 1:
+                    self.turn_chara() #反対ごっこ
+                    self.turn_flag() #次の反対ごっこまでの猶予
+                    self.se_turn.play()
+
+        self.t_turn -= 1 #タイマーを起動
+
+        if self.t_turn == 0: #タイマーが0で
+            self.turn_reset() #ターン出来るようにする
+    #ここまで反対ごっこ
+
+        self.jump_down()
+
+        #ゴール後ぴょんぴょん
+        if chk_goal_A == True:
+            self.i = 0
+            if SOUSA_MODE == 1 or SOUSA_MODE == 2:
+                if key[pygame.K_j] == True: #<===============================================
+                    if self.y == 150/2: #150 甘奈上角のy座標 
+                        self.se_jump.play() 
+                        self.jump()
+                        self.jump_flag()
+
+            if SOUSA_MODE == 3 or SOUSA_MODE == 4:
+                if key[pygame.K_SEMICOLON] == True: #<===============================================
+                    if self.y == 150/2: #150 甘奈上角のy座標 
+                        self.se_jump.play() 
+                        self.jump()
+                        self.jump_flag()
+
+            if self.canJump == False and self.land == False:
+                self.i = 1
+
+            self.jump_down()
+        #ゴール後ぴょんぴょん
+
     def jump(self): #ジャンプフラグ    
         if self.canJump:
             self.t_jump = 0
@@ -293,7 +389,7 @@ class Move_Amana(): #済
         self.canTurn = True
 
 #===============================================================================
-class Move_Amana_tuto(): #済
+class Move_Amana_tuto(Move_Amana): #済
     def __init__(self):
         self.ground = 125
         self.x_amana = 0 #甘奈の位置
@@ -358,6 +454,10 @@ class Move_Amana_tuto(): #済
                 ]
         self.ama_at = 0
 
+        self.se_jump = pygame.mixer.Sound("jump.ogg")
+        self.se_turn = pygame.mixer.Sound("turn.ogg")
+        self.se_fall = pygame.mixer.Sound("fall.ogg")
+
     def draw_chara(self, bg):
         self.ama_a = self.ANIMATION[self.ama_at % len(self.ANIMATION)]
 
@@ -373,11 +473,20 @@ class Move_Amana_tuto(): #済
         elif self.turn_int == 1 and self.land == False: #右へのジャンプ
             bg.blit(self.jump_amana[self.i], (390, self.y))
             
+    def draw_chara_title(self, bg):
+
+        self.ama_a = self.ANIMATION[self.ama_at % len(self.ANIMATION)]
+
+        if self.turn_int == -1 and self.land == True: #左への移動時
+            bg.blit(pygame.transform.scale(self.run_han_amana[self.ama_a], [100,100]), (50, 240))
+
+        elif self.turn_int == 1 and self.land == True: #右への移動時
+            bg.blit(pygame.transform.scale(self.run_amana[self.ama_a], [100,100]), (50, 240))
+
     def rect_x_update(self):            
         self.x_amana += 0
         self.ama_at += self.speed
         
-
     def rect_y_update(self):
         if self.land == True:
             self.y = self.ground - self.h 
@@ -391,42 +500,89 @@ class Move_Amana_tuto(): #済
                 self.y = self.ground - self.h 
                 self.land = True #←←ここ着地
         
+    def move_amana(self):
+        key = pygame.key.get_pressed()
 
-    def jump(self): #ジャンプフラグ    
-        if self.canJump == True:
-            self.t_jump = 0
-            self.canJump = False
+        self.t_move += 1
+        self.t_jump += 1
+        self.t_draw += 1
+        #ここからジャンプ
+        if self.canJump == True and self.land == True:
+            if SOUSA_MODE == 1 or SOUSA_MODE == 2:
+                if key[pygame.K_j] == True: #<===============================================
+                    if self.y == self.ground - self.h: #150 甘奈上角のy座標 
+                        self.se_jump.play()  
+                        self.jump()
+                        self.jump_flag()
 
-            self.i = 1
+        if SOUSA_MODE == 3 or SOUSA_MODE == 4:
+            if key[pygame.K_SEMICOLON] == True: #<===============================================
+                if self.y == self.ground - self.h: #150 甘奈上角のy座標 
+                    self.se_jump.play()  
+                    self.jump()
+                    self.jump_flag()
 
-    def jump_down(self): #下降時
-        A = math.cos(self.radPerFrame * self.t_jump) - math.sin(2 * (self.radPerFrame * self.t_jump)) / 2
+        self.t_canjump -= 1
 
-        if self.land == False and A < 0.3:
-            self.i = 2 
+        if self.t_canjump == 0:
+            self.jump_reset()
+            
+        #ここまでジャンプ
+        
+        #反対ごっこ
+        if SOUSA_MODE == 1 or SOUSA_MODE == 3:
+            if key[pygame.K_d] == True and self.canTurn == True:  #<===============================================   
+                self.turn_chara() #反対ごっこ
+                self.turn_flag() #次の反対ごっこまでの猶予
+                self.se_turn.play()
+            
+        if SOUSA_MODE == 2 or SOUSA_MODE == 4:
+            if key[pygame.K_a] == True and self.canTurn == True:  #<===============================================   
+                self.turn_chara() #反対ごっこ
+                self.turn_flag() #次の反対ごっこまでの猶予
+                self.se_turn.play()
 
-    def jump_flag(self):
-        if self.land == True:
-            self.t_canjump = 30            
-            self.land = False
+        self.t_turn -= 1 #タイマーを起動
 
-    def jump_reset(self):
-        self.t_canjump = 0
-        self.canJump = True
+        if self.t_turn == 0: #タイマーが0で
+            self.turn_reset() #ターン出来るようにする
+        #ここまで反対ごっこ
+        self.jump_down()
 
-    def turn_chara(self):
-        self.turn_int = -1 * self.turn_int
+        self.rect_x_update()
+        self.rect_y_update() 
 
-    def turn_flag(self):
-        self.t_turn = 8
-        self.canTurn = False
+    def move_amana_title(self):
+        key = pygame.key.get_pressed()
 
-    def turn_reset(self):        
-        self.t_turn = 0
-        self.canTurn = True
+        self.t_move += 1
+        self.t_jump += 1
+        self.t_draw += 1
+        self.land == True
+
+        #反対ごっこ
+        if key[pygame.K_LEFT] == True and self.canTurn == True:  #<===============================================   
+            self.turn_int = -1 #反対ごっこ
+            self.t_turn = 10
+            self.canTurn = False #次の反対ごっこまでの猶予 
+
+        if key[pygame.K_RIGHT] == True and self.canTurn == True:  #<===============================================   
+            self.turn_int = 1 #反対ごっこ
+            self.t_turn = 10
+            self.canTurn = False #次の反対ごっこまでの猶予
+
+        self.t_turn -= 1 #タイマーを起動
+
+        if self.t_turn == 0: #タイマーが0で
+            self.turn_reset() #ターン出来るようにする
+        #ここまで反対ごっこ
+        self.jump_down()
+
+        self.rect_x_update()
+        self.rect_y_update()
 
 #===============================================================================
-class Move_Chikiyu(): #済
+class Move_Chikiyu(Move_Amana): #済
     def __init__(self):
         self.x_amana = 0
         self.speed = 1
@@ -491,7 +647,11 @@ class Move_Chikiyu(): #済
                 pygame.image.load("chikiyu_stand_right.png"),#stage6       
                 pygame.image.load("chikiyu_stand_right_ce.png"),#end    
                 ]
-        
+
+        self.se_jump = pygame.mixer.Sound("jump.ogg")
+        self.se_turn = pygame.mixer.Sound("turn.ogg")
+        self.se_fall = pygame.mixer.Sound("fall.ogg")
+
     def draw_chara(self, bg):
         global chk_goal_C, chk_Lastgoal_C, index
 
@@ -517,7 +677,7 @@ class Move_Chikiyu(): #済
                 elif self.turn_int == 1 and self.land == False: #右へのジャンプ
                     bg.blit(self.jump_amana[self.i], (self.x_amana, self.y))
 
-            elif index == 1 and chk_goal_C == True:
+            elif (index == 1 or index == 10) and chk_goal_C == True:
                 #i=1:上昇, i=2:下降
                 bg.blit(self.stand_amana[self.i], (self.x_amana, self.y))
 
@@ -529,7 +689,7 @@ class Move_Chikiyu(): #済
             bg.blit(self.stand_amana[3], (self.x_amana, self.y))
 
     def rect_x_update(self):
-        global chk_0_C, chk_goal_C, chk_Lastgoal_C, index, life, chk_goal
+        global chk_0_C, chk_goal_C, chk_Lastgoal_C, index, life, chk_goal, endless_flag
         if chk_goal == False:
             self.speed = 1
 
@@ -596,7 +756,8 @@ class Move_Chikiyu(): #済
 
         if index == 4:
             if stage == 6:
-                self.x_amana += 0
+                if endless_flag == False:
+                    self.x_amana += 0
             else:
                 self.x_amana += 3
                 self.turn_int == 1
@@ -635,39 +796,81 @@ class Move_Chikiyu(): #済
         if index == 4:
             self.y = self.ground - self.h
 
-    def jump(self): #ジャンプフラグ    
-        if self.canJump:
-            self.t_jump = 0
-            self.canJump = False
-            self.i = 1
+    def move_chikiyu(self):
+        global endless_flag
+        key = pygame.key.get_pressed()
 
-    def jump_down(self): #下降時
-        A = math.cos(self.radPerFrame * self.t_jump) - math.sin(2 * (self.radPerFrame * self.t_jump)) / 2
+        if chk_goal_C == False:
+        #ここからジャンプ
+            if self.canJump == True and self.land == True:
+                if SOUSA_MODE == 1 or SOUSA_MODE == 2:
+                    if key[pygame.K_k] == True: #<===============================================
+                        if self.y == self.ground - self.h: #150 甘奈上角のy座標 
+                            self.se_jump.play()  
+                            self.jump()
+                            self.jump_flag()
 
-        if self.canJump == False and A < 0.3:
-            self.i = 2
+                if SOUSA_MODE == 3 or SOUSA_MODE == 4:
+                    if key[pygame.K_COLON] == True: #<===============================================
+                        if self.y == self.ground - self.h: #150 甘奈上角のy座標 
+                            self.se_jump.play()  
+                            self.jump()
+                            self.jump_flag()
 
-    def jump_flag(self):
-        if self.land == True:
-            self.t_canjump = 30            
-            self.land = False
+        self.t_canjump -= 1
 
-    def jump_reset(self):
-        self.t_canjump = 0
-        self.canJump = True
+        if self.t_canjump == 0:
+            self.jump_reset()
 
-    def turn_chara(self):
-        self.turn_int = -1 * self.turn_int
+        if self.y == self.ground - self.height + 5:
+            self.se_fall.play()
 
-    def turn_flag(self):
-        self.t_turn = 8
-        self.canTurn = False
 
-    def turn_reset(self):        
-        self.t_turn = 0
-        self.canTurn = True
+        #ここまでジャンプ
+
+        #反対ごっこ
+        if key[pygame.K_s] == True and self.canTurn == True: #<===============================================    
+            self.turn_chara() #反対ごzcっこ
+            self.turn_flag() #次の反対ごっこまでの猶予
+            self.se_turn.play()
+        if endless_flag == False:
+            if stage == 5:
+                RN_A = random.randint(1, 1000)
+                if RN_A == 1:
+                    self.turn_chara() #反対ごっこ
+                    self.turn_flag() #次の反対ごっこまでの猶予
+                    self.se_turn.play()
+            
+        self.t_turn -= 1 #タイマーを起動
+
+        if self.t_turn == 0: #タイマーが0で
+            self.turn_reset() #ターン出来るようにする
+        #ここまで反対ごっこ
+        self.jump_down()
+        #ゴール後ぴょんぴょん
+        if chk_goal_C == True:
+            self.i = 0
+            if SOUSA_MODE == 1 or SOUSA_MODE == 2:
+                if key[pygame.K_k] == True: #<===============================================
+                    if self.y == self.ground - self.h: #150 甘奈上角のy座標 
+                        self.se_jump.play()  
+                        self.jump()
+                        self.jump_flag()
+
+            if SOUSA_MODE == 3 or SOUSA_MODE == 4:
+                if key[pygame.K_COLON] == True: #<===============================================
+                    if self.y == self.ground - self.h: #150 甘奈上角のy座標 
+                        self.se_jump.play()  
+                        self.jump()
+                        self.jump_flag()
+
+            if self.canJump == False and self.land == False:
+                self.i = 1
+
+                self.jump_down()
+            #ゴール後ぴょんぴょん
 #===============================================================================
-class Move_Chikiyu_tuto(): #済
+class Move_Chikiyu_tuto(Move_Amana_tuto): #済
     def __init__(self):
         self.x_amana = 0
         self.speed = 1
@@ -734,6 +937,10 @@ class Move_Chikiyu_tuto(): #済
                 ]
         self.ama_at = 0
 
+        self.se_jump = pygame.mixer.Sound("jump.ogg")
+        self.se_turn = pygame.mixer.Sound("turn.ogg")
+        self.se_fall = pygame.mixer.Sound("fall.ogg")
+
     def draw_chara(self, bg):
         self.ama_a = self.ANIMATION[self.ama_at % len(self.ANIMATION)]
 
@@ -749,6 +956,16 @@ class Move_Chikiyu_tuto(): #済
         elif self.turn_int == 1 and self.land == False: #右へのジャンプ
             bg.blit(self.jump_amana[self.i], (390, self.y))
             
+    def draw_chara_title(self, bg):
+
+        self.ama_a = self.ANIMATION[self.ama_at % len(self.ANIMATION)]
+
+        if self.turn_int == -1 and self.land == True: #左への移動時
+            bg.blit(pygame.transform.scale(self.run_han_amana[self.ama_a], [100,110]), (50, 230))
+
+        elif self.turn_int == 1 and self.land == True: #右への移動時
+            bg.blit(pygame.transform.scale(self.run_amana[self.ama_a], [100,110]), (50, 230))
+
     def rect_x_update(self):            
         self.x_amana += 0
         self.ama_at += self.speed
@@ -765,40 +982,81 @@ class Move_Chikiyu_tuto(): #済
             if self.y >= self.ground - self.h:
                 self.y = self.ground - self.h 
                 self.land = True #←←ここ着地
+
+    def move_chikiyu(self):
+        key = pygame.key.get_pressed()
+
+        self.t_move += 1
+        self.t_jump += 1
+        self.t_draw += 1
+        #ここからジャンプ
+        if self.canJump == True and self.land == True:
+            if SOUSA_MODE == 1 or SOUSA_MODE == 2:
+                if key[pygame.K_k] == True: #<===============================================
+                    if self.y == self.ground - self.h: #150 甘奈上角のy座標 
+                        self.se_jump.play()  
+                        self.jump()
+                        self.jump_flag()
+
+            if SOUSA_MODE == 3 or SOUSA_MODE == 4:
+                if key[pygame.K_COLON] == True: #<===============================================
+                    if self.y == self.ground - self.h: #150 甘奈上角のy座標 
+                        self.se_jump.play()  
+                        self.jump()
+                        self.jump_flag()
+
+        self.t_canjump -= 1
+
+        if self.t_canjump == 0:
+            self.jump_reset()
+            
+        #ここまでジャンプ
         
+        #反対ごっこ
+        if key[pygame.K_s] == True and self.canTurn == True: #<===============================================    
+            self.turn_chara() #反対ごっこ
+            self.turn_flag() #次の反対ごっこまでの猶予
+            self.se_turn.play()
+            
+        self.t_turn -= 1 #タイマーを起動
 
-    def jump(self): #ジャンプフラグ    
-        if self.canJump == True:
-            self.t_jump = 0
-            self.canJump = False
+        if self.t_turn == 0: #タイマーが0で
+            self.turn_reset() #ターン出来るようにする
+        #ここまで反対ごっこ
+        self.jump_down()
 
-            self.i = 1
+        self.rect_x_update()
+        self.rect_y_update() 
 
-    def jump_down(self): #下降時
-        A = math.cos(self.radPerFrame * self.t_jump) - math.sin(2 * (self.radPerFrame * self.t_jump)) / 2
+    def move_chikiyu_title(self):
+        key = pygame.key.get_pressed()
 
-        if self.land == False and A < 0.3:
-            self.i = 2 
+        self.t_move += 1
+        self.t_jump += 1
+        self.t_draw += 1
+        self.land == True
 
-    def jump_flag(self):
-        if self.land == True:
-            self.t_canjump = 30            
-            self.land = False
+        #反対ごっこ
+        if key[pygame.K_LEFT] == True and self.canTurn == True:  #<===============================================   
+            self.turn_int = -1 #反対ごっこ
+            self.t_turn = 10
+            self.canTurn = False #次の反対ごっこまでの猶予 
 
-    def jump_reset(self):
-        self.t_canjump = 0
-        self.canJump = True
+        if key[pygame.K_RIGHT] == True and self.canTurn == True:  #<===============================================   
+            self.turn_int = 1 #反対ごっこ
+            self.t_turn = 10
+            self.canTurn = False #次の反対ごっこまでの猶予
 
-    def turn_chara(self):
-        self.turn_int = -1 * self.turn_int
+        self.t_turn -= 1 #タイマーを起動
 
-    def turn_flag(self):
-        self.t_turn = 8
-        self.canTurn = False
+        if self.t_turn == 0: #タイマーが0で
+            self.turn_reset() #ターン出来るようにする
+        #ここまで反対ごっこ
+        self.jump_down()
 
-    def turn_reset(self):        
-        self.t_turn = 0
-        self.canTurn = True
+        self.rect_x_update()
+        self.rect_y_update()
+
 #===============================================================================
 class Move_Chikiyu_Ending(): #済
     def __init__(self):
@@ -898,7 +1156,7 @@ class Move_Chikiyu_Ending(): #済
             self.x_amana = -100
 
 #==============================================================================
-class Move_Tenka(): #済
+class Move_Tenka(Move_Amana): #済
     def __init__(self):
         self.speed = 1
         self.h = 50
@@ -962,6 +1220,10 @@ class Move_Tenka(): #済
                 pygame.image.load("tenka_stand_right.png"),            
                 ]
         
+        self.se_jump = pygame.mixer.Sound("jump.ogg")
+        self.se_turn = pygame.mixer.Sound("turn.ogg")
+        self.se_fall = pygame.mixer.Sound("fall.ogg")
+        
     def draw_chara(self, bg):
         global chk_goal_T, chk_Lastgoal_T, index
         if self.turn_int == -1:
@@ -986,7 +1248,7 @@ class Move_Tenka(): #済
                 elif self.turn_int == 1 and self.land == False: #右へのジャンプ
                     bg.blit(self.jump_amana[self.i], (self.x_amana, self.y))
 
-            elif index == 1 and chk_goal_T == True:
+            elif (index == 1 or index == 10) and chk_goal_T == True:
                 #i=1:上昇, i=2:下降
                 bg.blit(self.stand_amana[self.i], (self.x_amana, self.y))
 
@@ -998,7 +1260,7 @@ class Move_Tenka(): #済
             bg.blit(self.stand_amana[3], (self.x_amana, self.y))
 
     def rect_x_update(self):
-        global chk_0_T, chk_goal_T, chk_Lastgoal_T, index, life, chk_goal
+        global chk_0_T, chk_goal_T, chk_Lastgoal_T, index, life, chk_goal, endless_flag
         if chk_goal == False:
             self.speed = 1
 
@@ -1065,7 +1327,8 @@ class Move_Tenka(): #済
 
         if index == 4:
             if stage == 6:
-                self.x_amana += 0
+                if endless_flag == False:
+                    self.x_amana += 0
             else:
                 self.x_amana += 3
                 self.turn_int == 1
@@ -1104,40 +1367,95 @@ class Move_Tenka(): #済
         if index == 4:
             self.y = 225
 
-    def jump(self): #ジャンプフラグ    
-        if self.canJump == True:
-            self.t_jump = 0
-            self.canJump = False
+    def move_tenka(self):
+        global endless_flag
+        key = pygame.key.get_pressed()
 
-            self.i = 1
+        if chk_goal_T == False:
+        #ここからジャンプ
+            if self.canJump == True and self.land == True:
+                if SOUSA_MODE == 1 or SOUSA_MODE == 2:
+                    if key[pygame.K_l] == True: #<===============================================
+                        if self.y == self.ground - self.h: #150 甘奈上角のy座標 
+                            self.se_jump.play()  
+                            self.jump()
+                            self.jump_flag()
 
-    def jump_down(self): #下降時
-        A = math.cos(self.radPerFrame * self.t_jump) - math.sin(2 * (self.radPerFrame * self.t_jump)) / 2
+                if SOUSA_MODE == 3 or SOUSA_MODE == 4:
+                    if key[pygame.K_RIGHTBRACKET] == True: #<===============================================
+                        if self.y == self.ground - self.h: #150 甘奈上角のy座標 
+                            self.se_jump.play()  
+                            self.jump()
+                            self.jump_flag()
+                    
+                #落下音
+                if self.y == self.ground - self.height + 5:
+                    self.se_fall.play()
 
-        if self.land == False and A < 0.3:
-            self.i = 2 
+            if self.canJump == False and self.land == False:
+                self.i = 1
 
-    def jump_flag(self):
-        if self.land == True:
-            self.t_canjump = 30            
-            self.land = False
+                self.jump_down()
 
-    def jump_reset(self):
-        self.t_canjump = 0
-        self.canJump = True
+        self.t_canjump -= 1
 
-    def turn_chara(self):
-        self.turn_int = -1 * self.turn_int
+        if self.t_canjump == 0:
+            self.jump_reset()
+        #ここまでジャンプ
 
-    def turn_flag(self):
-        self.t_turn = 8
-        self.canTurn = False
+        #反対ごっこ
+        if SOUSA_MODE == 1 or SOUSA_MODE == 3:
+            if key[pygame.K_a] == True and self.canTurn == True: #<===============================================
+                self.turn_chara() #反対ごっこ
+                self.turn_flag() #次の反対ごっこまでの猶予
+                self.se_turn.play()
+            
+        if SOUSA_MODE == 2 or SOUSA_MODE == 4:
+            if key[pygame.K_d] == True and self.canTurn == True: #<===============================================
+                self.turn_chara() #反対ごっこ
+                self.turn_flag() #次の反対ごっこまでの猶予
+                self.se_turn.play()
+        if endless_flag == False:
+            if stage == 5:
+                RN_A = random.randint(1, 1000)
+                if RN_A == 1:
+                    self.turn_chara() #反対ごっこ
+                    self.turn_flag() #次の反対ごっこまでの猶予
+                    self.se_turn.play()
+        
+        self.t_turn -= 1 #タイマーを起動
 
-    def turn_reset(self):        
-        self.t_turn = 0
-        self.canTurn = True
+        if self.t_turn == 0: #タイマーが0で
+            self.turn_reset() #ターン出来るようにする
+
+            self.jump_down()
+        #ここまで反対ごっこ
+
+        #ゴール後ぴょんぴょん
+        if chk_goal_T == True:
+            self.i = 0
+            if SOUSA_MODE == 1 or SOUSA_MODE == 2:
+                if key[pygame.K_l] == True: #<===============================================
+                    if self.y == self.ground - self.h: #150 甘奈上角のy座標 
+                        self.se_jump.play()  
+                        self.jump()
+                        self.jump_flag()
+
+            if SOUSA_MODE == 3 or SOUSA_MODE == 4:
+                if key[pygame.K_RIGHTBRACKET] == True: #<===============================================
+                    if self.y == self.ground - self.h: #150 甘奈上角のy座標 
+                        self.se_jump.play()  
+                        self.jump()
+                        self.jump_flag()
+
+            if self.canJump == False and self.land == False:
+                self.i = 1
+
+                self.jump_down()
+            #ゴール後ぴょんぴょん
+
 #==============================================================================
-class Move_Tenka_tuto(): #済
+class Move_Tenka_tuto(Move_Amana_tuto): #済
     def __init__(self):
         self.ground = 325
         self.speed = 1
@@ -1203,6 +1521,10 @@ class Move_Tenka_tuto(): #済
                 ]
         self.ama_at = 0
 
+        self.se_jump = pygame.mixer.Sound("jump.ogg")
+        self.se_turn = pygame.mixer.Sound("turn.ogg")
+        self.se_fall = pygame.mixer.Sound("fall.ogg")
+
     def draw_chara(self, bg):
         self.ama_a = self.ANIMATION[self.ama_at % len(self.ANIMATION)]
 
@@ -1218,11 +1540,20 @@ class Move_Tenka_tuto(): #済
         elif self.turn_int == 1 and self.land == False: #右へのジャンプ
             bg.blit(self.jump_amana[self.i], (390, self.y))
             
+    def draw_chara_title(self, bg):
+
+        self.ama_a = self.ANIMATION[self.ama_at % len(self.ANIMATION)]
+
+        if self.turn_int == -1 and self.land == True: #左への移動時
+            bg.blit(pygame.transform.scale(self.run_han_amana[self.ama_a], [100,100]), (50, 240))
+
+        elif self.turn_int == 1 and self.land == True: #右への移動時
+            bg.blit(pygame.transform.scale(self.run_amana[self.ama_a], [100,100]), (50, 240))
+
     def rect_x_update(self):            
         self.x_amana += 0
         self.ama_at += self.speed
         
-
     def rect_y_update(self):
         if self.land == True:
             self.y = self.ground - self.h 
@@ -1236,40 +1567,86 @@ class Move_Tenka_tuto(): #済
                 self.y = self.ground - self.h 
                 self.land = True #←←ここ着地
 
+    def move_tenka(self):
+        key = pygame.key.get_pressed()
+
+        self.t_move += 1
+        self.t_jump += 1
+        self.t_draw += 1
+        #ここからジャンプ
+        if self.canJump == True and self.land == True:
+            if SOUSA_MODE == 1 or SOUSA_MODE == 2:
+                if key[pygame.K_l] == True: #<===============================================
+                    if self.y == self.ground - self.h: #150 甘奈上角のy座標 
+                        self.se_jump.play()  
+                        self.jump()
+                        self.jump_flag()
+
+            if SOUSA_MODE == 3 or SOUSA_MODE == 4:
+                if key[pygame.K_j] == True: #<===============================================
+                    if self.y == self.ground - self.h: #150 甘奈上角のy座標 
+                        self.se_jump.play()  
+                        self.jump()
+                        self.jump_flag()
+
+        self.t_canjump -= 1
+
+        if self.t_canjump == 0:
+            self.jump_reset()
+            
+        #ここまでジャンプ
         
+        #反対ごっこ
+        if SOUSA_MODE == 1:
+            if key[pygame.K_a] == True and self.canTurn == True: #<===============================================    
+                self.turn_chara() #反対ごっこ
+                self.turn_flag() #次の反対ごっこまでの猶予
+                self.se_turn.play()
 
-    def jump(self): #ジャンプフラグ    
-        if self.canJump == True:
-            self.t_jump = 0
-            self.canJump = False
+        if SOUSA_MODE == 2:
+            if key[pygame.K_d] == True and self.canTurn == True: #<===============================================    
+                self.turn_chara() #反対ごっこ
+                self.turn_flag() #次の反対ごっこまでの猶予
+                self.se_turn.play()
+            
+        self.t_turn -= 1 #タイマーを起動
 
-            self.i = 1
+        if self.t_turn == 0: #タイマーが0で
+            self.turn_reset() #ターン出来るようにする
+        #ここまで反対ごっこ
+        self.jump_down()
 
-    def jump_down(self): #下降時
-        A = math.cos(self.radPerFrame * self.t_jump) - math.sin(2 * (self.radPerFrame * self.t_jump)) / 2
+        self.rect_x_update()
+        self.rect_y_update() 
 
-        if self.land == False and A < 0.3:
-            self.i = 2 
+    def move_tenka_title(self):
+        key = pygame.key.get_pressed()
 
-    def jump_flag(self):
-        if self.land == True:
-            self.t_canjump = 30            
-            self.land = False
+        self.t_move += 1
+        self.t_jump += 1
+        self.t_draw += 1
+        self.land == True
 
-    def jump_reset(self):
-        self.t_canjump = 0
-        self.canJump = True
+        #反対ごっこ
+        if key[pygame.K_LEFT] == True and self.canTurn == True:  #<===============================================   
+            self.turn_int = -1 #反対ごっこ
+            self.t_turn = 10
+            self.canTurn = False #次の反対ごっこまでの猶予 
 
-    def turn_chara(self):
-        self.turn_int = -1 * self.turn_int
+        if key[pygame.K_RIGHT] == True and self.canTurn == True:  #<===============================================   
+            self.turn_int = 1 #反対ごっこ
+            self.t_turn = 10
+            self.canTurn = False #次の反対ごっこまでの猶予
 
-    def turn_flag(self):
-        self.t_turn = 8
-        self.canTurn = False
+        self.t_turn -= 1 #タイマーを起動
 
-    def turn_reset(self):        
-        self.t_turn = 0
-        self.canTurn = True
+        if self.t_turn == 0: #タイマーが0で
+            self.turn_reset() #ターン出来るようにする
+        #ここまで反対ごっこ
+        self.jump_down()
+
+        self.rect_x_update()
+        self.rect_y_update()
 #キャラの動き============================================
 
 #ステージの動き============================================
@@ -1326,7 +1703,7 @@ class Stage_Create(): #済
                 ]
             
         if stage == 4:
-            #s_random = Stage_Create_RN()
+            #S_Random = Stage_Create_RN()
             self.map_data = generated
 
         if stage == 5:
@@ -1337,7 +1714,7 @@ class Stage_Create(): #済
                 ]
 
         if stage == 6:
-            #s_random = Stage_Create_RN()
+            #S_Random = Stage_Create_RN()
             self.map_data = generated2
 
     def create_stage(self, bg):
@@ -1420,7 +1797,6 @@ class Stage_Create(): #済
 
         self.x_Limit()
         
-
     def x_Limit(self):
         global generated, generated2, chk_goal
         line = self.map_data[0]
@@ -1432,20 +1808,21 @@ class Stage_Create(): #済
         if self.x_road <= -100:
             self.x_road = -100
 
-class Stage_Create_RN():
+class Stage_Create_RN(Stage_Create):
     def __init__(self):
         self.x_road = 0
         self.map_data = []
         self.block = [
-                pygame.image.load("block_kara.png"),
-                pygame.image.load("block_pskyblue.png"),
+                pygame.image.load("block_kara.png"), #0
+                pygame.image.load("block_pskyblue.png"),#1
                 
                 pygame.image.load("block_yellow.png"), #start
                 pygame.image.load("block_yellow.png"), #goal
 
-                pygame.image.load("block_chikiyu.png"),
-                pygame.image.load("block_tenka.png"),
+                pygame.image.load("block_chikiyu.png"),#4
+                pygame.image.load("block_tenka.png"),#5
                 ]
+
     def set_stage(self, tip_num,repeat):
         #TODO ランダム生成
         self.map_data = [[2] * 4, [2] * 4, [2] * 4]
@@ -1531,6 +1908,162 @@ class Stage_Create_RN():
         #print(len(map_line3))
         self.map_data[2] += map_line3
 
+    def set_stage_endless(self, tip_num,repeat):
+        #TODO ランダム生成
+        self.map_data = [[2] * 4, [2] * 4, [2] * 4]
+
+
+        map_tip =  [[tip_num,tip_num,tip_num,tip_num,tip_num,tip_num,0,0,],
+                    [tip_num,tip_num,tip_num,tip_num,0,0,tip_num,tip_num,],
+                    [tip_num,tip_num,0,0,tip_num,tip_num,tip_num,tip_num,],
+                    [tip_num,tip_num,tip_num,tip_num,0,0,tip_num,tip_num,]]
+        
+        map_line1 = []
+        map_line2 = []
+        map_line3 = []
+
+        i = 1
+        j = 1
+        k = 1
+
+        while i <= repeat:
+            n = random.randint(0, 3)
+            if n == 0:
+                map_line1 += map_tip[0]
+            elif n == 1:
+                map_line1 += map_tip[1]
+            elif n == 2:
+                map_line1 += map_tip[2]
+            elif n == 3:
+                map_line1 += map_tip[3]
+            i += 1
+
+        map_line1 += [tip_num]*4
+        map_line1 += [3] * 6
+        self.map_data[0] += map_line1
+
+        while j <= repeat:
+            n = random.randint(0, 3)
+            if n == 0:
+                map_line2 += map_tip[0]
+            elif n == 1:
+                map_line2 += map_tip[1]
+            elif n == 2:
+                map_line2 += map_tip[2]
+            elif n == 3:
+                map_line2 += map_tip[3]
+            j += 1
+        map_line2 += [tip_num]*4
+        map_line2 += [3] * 6
+        self.map_data[1] += map_line2
+
+        while k <= repeat:
+            n = random.randint(0, 3)
+            if n == 0:
+                map_line3 += map_tip[0]
+            elif n == 1:
+                map_line3 += map_tip[1]
+            elif n == 2:
+                map_line3 += map_tip[2]
+            elif n == 3:
+                map_line3 += map_tip[3]
+            k += 1
+
+        map_line3 += [tip_num]*4
+        map_line3 += [3] * 6
+        self.map_data[2] += map_line3
+
+    def create_stage(self, bg):
+        #self.set_stage_endless(tip_num,repeat)
+        stage_len = self.map_data[0]
+    
+        for i in range(len(stage_len)):
+
+            #甘奈
+            if self.map_data[0][i] == 0:
+                bg.blit(self.block[0], (25 * i - self.x_road, 125))
+                
+            elif self.map_data[0][i] == 1:
+                bg.blit(self.block[1], (25 * i - self.x_road, 125))
+
+            elif self.map_data[0][i] == 2:
+                bg.blit(self.block[2], (25 * i - self.x_road, 125))
+
+            elif self.map_data[0][i] == 3:
+                bg.blit(self.block[3], (25 * i - self.x_road, 125))     
+
+            elif self.map_data[0][i] == 4:
+                bg.blit(self.block[4], (25 * i - self.x_road, 125))
+
+            elif self.map_data[0][i] == 5:
+                bg.blit(self.block[5], (25 * i - self.x_road, 125))  
+
+            #ちきゆ
+            if self.map_data[1][i] == 0:
+                bg.blit(self.block[0], (25 * i - self.x_road, 225))
+                
+            elif self.map_data[1][i] == 1:
+                bg.blit(self.block[1], (25 * i - self.x_road, 225))
+
+            elif self.map_data[1][i] == 2:
+                bg.blit(self.block[2], (25 * i - self.x_road, 225))
+
+            elif self.map_data[1][i] == 3:
+                bg.blit(self.block[3], (25 * i - self.x_road, 225))
+
+            elif self.map_data[1][i] == 4:
+                bg.blit(self.block[4], (25 * i - self.x_road, 225))
+
+            elif self.map_data[1][i] == 5:
+                bg.blit(self.block[5], (25 * i - self.x_road, 225)) 
+
+            elif self.map_data[1][i] == 6:
+                bg.blit(self.block[5], (25 * i - self.x_road, 225))
+
+            #甜花
+            if self.map_data[2][i] == 0:
+                bg.blit(self.block[0], (25 * i - self.x_road, 325))
+                
+            elif self.map_data[2][i] == 1:
+                bg.blit(self.block[1], (25 * i - self.x_road, 325))
+
+            elif self.map_data[2][i] == 2:
+                bg.blit(self.block[2], (25 * i - self.x_road, 325))
+
+            elif self.map_data[2][i] == 3:
+                bg.blit(self.block[3], (25 * i - self.x_road, 325))
+
+            elif self.map_data[2][i] == 4:
+                bg.blit(self.block[4], (25 * i - self.x_road, 325))
+
+            elif self.map_data[2][i] == 5:
+                bg.blit(self.block[5], (25 * i - self.x_road, 325))  
+
+            elif self.map_data[2][i] == 6:
+                bg.blit(self.block[5], (25 * i - self.x_road, 325))
+
+    def stage_scrool2(self):
+        global fall_flag
+        if fall_flag == False:
+            self.x_road += 1
+
+        elif fall_flag == True:
+            self.x_road += 0
+
+        self.x_Limit()
+
+    def x_Limit(self):
+        global chk_goal
+
+        line = self.map_data[0]
+
+        if self.x_road >= len(line)*25 - 480: #960:画面の横幅
+            self.x_road = len(line)*25 - 480
+            chk_goal = True
+            
+        if self.x_road <= -100:
+            self.x_road = -100
+
 #ステージの動き============================================
 
 #ライフ管理================================================
@@ -1596,8 +2129,8 @@ class Enshutsu():
     def text_draw_left(self, msg, col, size, x, y, bg):
         font = pygame.font.Font(("JF-Dot-Shinonome16.ttf"), size)
 
-        sur3 = font.render(msg, True, (0,0,0))
-        bg.blit(sur3, (x+1, y+1))
+        sur3 = font.render(msg, True, col)
+        bg.blit(sur3, (x-1, y-1))
 
         sur1 = font.render(msg, True, col)
         bg.blit(sur1, (x, y))
@@ -1606,24 +2139,35 @@ class Enshutsu():
         font = pygame.font.Font(("JF-Dot-Shinonome16.ttf"), size)
         
         sur_s = font.render(msg, True, (0,0,0))
-        sur_rect_s = sur_s.get_rect(center=(x+1, y+1))
+        sur_rect_s = sur_s.get_rect(center=(x+2, y+2))
         bg.blit(sur_s, sur_rect_s)
 
-        sur1 = font.render(msg, True, col)
-        sur1_rect = sur1.get_rect(center=(x, y))
-        bg.blit(sur1, sur1_rect)
-
-    def text_draw_center56(self, msg, col, size, x, y, bg):
-        font = pygame.font.Font(("JF-Dot-Shinonome16.ttf"), size)
-
         sur3 = font.render(msg, True, col)
-        sur3_rect = sur3.get_rect(center=(x+1, y+1))
+        sur3_rect = sur3.get_rect(center=(x-1, y-1))
         bg.blit(sur3, sur3_rect)
 
         sur1 = font.render(msg, True, col)
         sur1_rect = sur1.get_rect(center=(x, y))
         bg.blit(sur1, sur1_rect)
 
+        sur2 = font.render(msg, True, col)
+        sur2_rect = sur2.get_rect(center=(x+1, y+1))
+        bg.blit(sur2, sur2_rect)
+
+    def text_draw_center56(self, msg, col, size, x, y, bg):
+        font = pygame.font.Font(("JF-Dot-Shinonome16.ttf"), size)
+
+        sur3 = font.render(msg, True, col)
+        sur3_rect = sur3.get_rect(center=(x-1, y-1))
+        bg.blit(sur3, sur3_rect)
+
+        sur1 = font.render(msg, True, col)
+        sur1_rect = sur1.get_rect(center=(x, y))
+        bg.blit(sur1, sur1_rect)
+
+        sur2 = font.render(msg, True, col)
+        sur2_rect = sur2.get_rect(center=(x+1, y+1))
+        bg.blit(sur2, sur2_rect)
 
     def tuto_rial(self, bg): #済
         global tuto_ind
@@ -1917,6 +2461,53 @@ class Enshutsu():
             bg.blit(self.last3, (0,0))
             bg.blit(img_s_c2, (50,235))
             self.text_draw_left("「遠慮はしないんだ、もう」",WHITE, 25, 120, 240, bg)   
+
+    def tuto_sentaku(self):
+        global index, t_key, mt_key, tuto_ind
+        key = pygame.key.get_pressed()
+        mt_key -= 1
+
+        if mt_key <= 0:
+            mt_key = 0
+                
+        if key[pygame.K_LEFT] == True and mt_key <= 0:
+            tuto_ind -= 1
+            mt_key = 10
+        if key[pygame.K_RIGHT] == True and mt_key <= 0:
+            tuto_ind += 1
+            mt_key = 10
+
+        if key[pygame.K_SPACE] == True and mt_key <= 0:
+            index = 0
+            t_key = 10
+
+
+        if tuto_ind <= 1:
+            tuto_ind = 1
+        if tuto_ind >= 3:
+            tuto_ind = 3
+
+    def config_sentaku(self):
+        global t_key,SOUSA_MODE,index
+
+        key = pygame.key.get_pressed()
+        if t_key <= 0:
+            t_key = 0
+            if key[pygame.K_LEFT] == True:
+                SOUSA_MODE -= 1
+                t_key = 10
+            if key[pygame.K_RIGHT] == True:
+                SOUSA_MODE += 1
+                t_key = 10
+
+            if key[pygame.K_SPACE] == True:
+                index = 0
+                t_key = 10
+
+        if SOUSA_MODE < 1:
+            SOUSA_MODE = 2
+        if SOUSA_MODE > 2:
+            SOUSA_MODE = 1
 #=================================================================================
 async def main():
     global fall_flag, chk_0_A, chk_0_C, chk_0_T, index, stage, generated, generated2, life,enshutsu
@@ -1925,6 +2516,7 @@ async def main():
     global rect1, rect2
     global en_ind, en_timer1, stop_ce, en_ind7, tuto_ind, t_key, mode_flag
     global SOUSA_MODE, con_ind
+    global key_spc, mt_key, endless_flag
 
     pygame.init()
     pygame.display.set_caption("")
@@ -1948,6 +2540,8 @@ async def main():
 
     #ステージ
     StCre = Stage_Create()
+    S_Random = Stage_Create_RN()
+
     #ライフ
     Life = Life_Manage()
     #テキスト
@@ -1970,11 +2564,12 @@ async def main():
 
     t_GO = 0
 
-    index = 0
+    index = 11
     tmr_music = 0
     life = 3
     stage = 1
     mode_flag = 1
+    endless_flag = False
 
     #アイキャッチ用
     from5to1 = 60
@@ -1984,7 +2579,8 @@ async def main():
 
     #説明用
     tuto_ind = 1
-    t_key = 0
+    t_key = 90
+    tmr = 0
 
     #エンディング用
     stop_ce = False
@@ -2000,10 +2596,11 @@ async def main():
     con_ind = 1
     SOUSA_MODE = 1
 
-    s_random = Stage_Create_RN()
-    s_random.set_stage(5, 2)
-    generated2 = s_random.map_data
+    S_Random = Stage_Create_RN()
+    S_Random.set_stage(5, 2)
+    generated2 = S_Random.map_data
 
+    pygame.mixer.music.set_volume(0.5)
     pygame.mixer.music.load("arusutoromeria.ogg")
 
     se_jump = pygame.mixer.Sound("jump.ogg")
@@ -2020,8 +2617,10 @@ async def main():
 
         if index == 0: #済
             pygame.mixer.music.stop()
+            screen.fill((0, 0, 64))
             TITLE = pygame.image.load("title.png")
-            screen.blit(TITLE, (0, 0)) 
+            title_s = pygame.transform.scale(TITLE, [528, 396])
+            screen.blit(title_s, (-30, -30)) 
 
             chk_goal = False
 
@@ -2035,10 +2634,11 @@ async def main():
             chk_goal_T = False
 
             StCre.__init__()
-
+            Moving_CE.__init__()
             
-            #index = 0
+            index = 0
             tmr_music = 0
+            
 
             life = 3
             t_GO = 0
@@ -2049,51 +2649,89 @@ async def main():
             en_ind = 1
             en_timer1 = 120
 
-            Txt.text_draw("START PRODUCE!", WHITE, 30, 240, 250, screen)
-            Txt.text_draw("MANUAL", WHITE, 30, 240, 290, screen)
-            Txt.text_draw("CONFIG", WHITE, 30, 240, 330, screen)
-
+            
+            tmr += 1
             #t_key -= 1
+            if tmr % 40 < 20: 
+                pygame.draw.polygon(screen, (255,255,255), [[180,258],[180,278],[160,268]])
+                pygame.draw.polygon(screen, (255,255,255), [[450,258],[450,278],[470,268]])
 
             if mode_flag == 1:
-                pygame.draw.polygon(screen, (255,255,255), [[90,240],[90,260],[125,250]])
+                Txt.text_draw("STORY MODE", WHITE, 40, 320, 270, screen)
+                #pygame.draw.polygon(screen, (255,255,255), [[90,200],[90,220],[125,210]])
             elif mode_flag == 2:
-                pygame.draw.polygon(screen, (255,255,255), [[90,275],[90,295],[125,285]])
+                Txt.text_draw("ENDLESS MODE", WHITE, 40, 320, 270, screen)
+                #pygame.draw.polygon(screen, (255,255,255), [[90,240],[90,260],[125,250]])
             elif mode_flag == 3:
-                pygame.draw.polygon(screen, (255,255,255), [[90,315],[90,335],[125,325]])
+                Txt.text_draw("MANUAL", WHITE, 40, 320, 270, screen)
+                #pygame.draw.polygon(screen, (255,255,255), [[90,275],[90,295],[125,285]])
+            elif mode_flag == 4:
+                Txt.text_draw("CONFIG", WHITE, 40, 320, 270, screen)
+                #pygame.draw.polygon(screen, (255,255,255), [[90,315],[90,335],[125,325]])
+
+            Txt.text_draw("START TO PRESS [SPACE]", WHITE, 20, 320, 320, screen)
+
+            if tmr == 1:
+                title_chara = random.randint(0,2)
+
+            if title_chara == 0:
+                Moving_AT.move_amana_title()
+                Moving_AT.draw_chara_title(screen)
+            elif title_chara == 1:
+                Moving_CT.move_chikiyu_title()
+                Moving_CT.draw_chara_title(screen)
+            elif title_chara == 2:
+                Moving_TT.move_tenka_title()
+                Moving_TT.draw_chara_title(screen)
 
             key = pygame.key.get_pressed()
 
-            if t_key <= 0:
+            if t_key < 0:
                 t_key = 0
             
-                if key[pygame.K_UP] == True:
+                if key[pygame.K_LEFT] == True:
+                    se_turn.play()
                     mode_flag -= 1
                     t_key = 10
 
-                if key[pygame.K_DOWN] == True:
+                if key[pygame.K_RIGHT] == True:
+                    se_turn.play()
                     mode_flag += 1
                     t_key = 10
 
                 if mode_flag < 1:
-                    mode_flag = 3
-                if mode_flag > 3:
+                    mode_flag = 4
+                if mode_flag > 4:
                     mode_flag = 1
             
-                if key[pygame.K_SPACE] == True:       
+                if key[pygame.K_SPACE] == True:
+                    #se_jump.play()
                     if mode_flag == 1:
                         stage = 1
                         fall_flag = False
                         t_key = 50
+                        endless_flag = False
+                        life = 3
                         index = 5
 
                     elif mode_flag == 2:
-                        t_key = 10
+                        pygame.mixer.music.load("arusutoromeria.ogg")
+                        S_Random.set_stage_endless(1, 5)
+                        generated = S_Random.map_data
+                        stage = 1
+                        fall_flag = False
+                        t_key = 50
+                        endless_flag = True
+                        life = 3                        
+                        index = 10
+
+                    elif mode_flag == 3:
+                        mt_key = 50
                         tuto_ind = 1
                         index = 8
 
-                    elif mode_flag == 3:
-                        t_key = 10
+                    elif mode_flag == 4:
+                        t_key = 50
                         tuto_ind = 1
                         index = 9
 
@@ -2126,10 +2764,8 @@ async def main():
             StCre.create_stage(screen)
 
 #====================甘奈=======================================================
-
         # キャラの描画
-            Moving_A.draw_chara(screen)
-        
+            Moving_A.draw_chara(screen)        
         #床の判定(なんか関数に出来ない)
             StA = StCre.map_data[0]
             #print(StA)　#チェック用
@@ -2167,94 +2803,11 @@ async def main():
                         chk_goal_A = True
                 #print(chk_0_A)　チェック用
         #ここまで床
-
             key = pygame.key.get_pressed()
-
-            if chk_goal_A == False:
-        #ここからジャンプ
-                if Moving_A.canJump == True and Moving_A.land == True:
-                    if SOUSA_MODE == 1 or SOUSA_MODE == 2:
-                        if key[pygame.K_j] == True: #<===============================================
-                            if Moving_A.y == Moving_A.ground - Moving_A.h: #150 甘奈上角のy座標 
-                                se_jump.play()  
-                                Moving_A.jump()
-                                Moving_A.jump_flag()
-
-                    if SOUSA_MODE == 3 or SOUSA_MODE == 4:
-                        if key[pygame.K_SEMICOLON] == True: #<===============================================
-                            if Moving_A.y == Moving_A.ground - Moving_A.h: #150 甘奈上角のy座標 
-                                se_jump.play()  
-                                Moving_A.jump()
-                                Moving_A.jump_flag()
-
-                    #落下音
-                    if Moving_A.y == Moving_A.ground - Moving_A.height + 5:
-                        se_fall.play()
-
-            Moving_A.t_canjump -= 1
-
-            if Moving_A.t_canjump == 0:
-                Moving_A.jump_reset()
-
-
-        #ここまでジャンプ
-        
-        #反対ごっこ
-            if SOUSA_MODE == 1 or SOUSA_MODE == 3:
-                if key[pygame.K_d] == True and Moving_A.canTurn == True:  #<===============================================   
-                    Moving_A.turn_chara() #反対ごっこ
-                    Moving_A.turn_flag() #次の反対ごっこまでの猶予
-                    se_turn.play()
-            
-            elif SOUSA_MODE == 2 or SOUSA_MODE == 4:
-                if key[pygame.K_a] == True and Moving_A.canTurn == True:  #<===============================================   
-                    Moving_A.turn_chara() #反対ごっこ
-                    Moving_A.turn_flag() #次の反対ごっこまでの猶予
-                    se_turn.play()
-        
-            if stage == 5:
-                RN_A = random.randint(1, 1000)
-                if RN_A == 1:
-                    Moving_A.turn_chara() #反対ごっこ
-                    Moving_A.turn_flag() #次の反対ごっこまでの猶予
-                    se_turn.play()
-
-            Moving_A.t_turn -= 1 #タイマーを起動
-
-            if Moving_A.t_turn == 0: #タイマーが0で
-                Moving_A.turn_reset() #ターン出来るようにする
-        #ここまで反対ごっこ
-
-            Moving_A.jump_down()
-
-            #ゴール後ぴょんぴょん
-            if chk_goal_A == True:
-                Moving_A.i = 0
-                if SOUSA_MODE == 1 or SOUSA_MODE == 2:
-                    if key[pygame.K_j] == True: #<===============================================
-                        if Moving_A.y == 75: #150 甘奈上角のy座標 
-                            se_jump.play() 
-                            Moving_A.jump()
-                            Moving_A.jump_flag()
-
-                if SOUSA_MODE == 3 or SOUSA_MODE == 4:
-                    if key[pygame.K_SEMICOLON] == True: #<===============================================
-                        if Moving_A.y == 75: #150 甘奈上角のy座標 
-                            se_jump.play() 
-                            Moving_A.jump()
-                            Moving_A.jump_flag()
-
-                if Moving_A.canJump == False and Moving_A.land == False:
-                    Moving_A.i = 1
-
-                Moving_A.jump_down()
-            #ゴール後ぴょんぴょん
-
+            Moving_A.move_amana()
 #====================ちきゆ=======================================================
-
         # キャラの描画
             Moving_C.draw_chara(screen)
-        
         #床の判定(なんか関数に出来ない)
             StC = StCre.map_data[1]
             #print(StC) #チェック用
@@ -2291,81 +2844,10 @@ async def main():
                     chk_Lastgoal_C = True
             #print(chk_0_A)　チェック用
         #ここまで床
-
             key = pygame.key.get_pressed()
 
-            if chk_goal_C == False:
-        #ここからジャンプ
-                if Moving_C.canJump == True and Moving_C.land == True:
-                    if SOUSA_MODE == 1 or SOUSA_MODE == 2:
-                        if key[pygame.K_k] == True: #<===============================================
-                            if Moving_C.y == Moving_C.ground - Moving_C.h: #150 甘奈上角のy座標 
-                                se_jump.play()  
-                                Moving_C.jump()
-                                Moving_C.jump_flag()
-
-                    if SOUSA_MODE == 3 or SOUSA_MODE == 4:
-                        if key[pygame.K_COLON] == True: #<===============================================
-                            if Moving_C.y == Moving_C.ground - Moving_C.h: #150 甘奈上角のy座標 
-                                se_jump.play()  
-                                Moving_C.jump()
-                                Moving_C.jump_flag()
-
-            Moving_C.t_canjump -= 1
-
-            if Moving_C.t_canjump == 0:
-                Moving_C.jump_reset()
-
-            if Moving_C.y == Moving_C.ground - Moving_C.height + 5:
-                se_fall.play()
-
-
-        #ここまでジャンプ
-
-        #反対ごっこ
-            if key[pygame.K_s] == True and Moving_C.canTurn == True: #<===============================================    
-                Moving_C.turn_chara() #反対ごzcっこ
-                Moving_C.turn_flag() #次の反対ごっこまでの猶予
-                se_turn.play()
-
-            if stage == 5:
-                RN_A = random.randint(1, 1000)
-                if RN_A == 1:
-                    Moving_C.turn_chara() #反対ごっこ
-                    Moving_C.turn_flag() #次の反対ごっこまでの猶予
-                    se_turn.play()
-            
-            Moving_C.t_turn -= 1 #タイマーを起動
-
-            if Moving_C.t_turn == 0: #タイマーが0で
-                Moving_C.turn_reset() #ターン出来るようにする
-        #ここまで反対ごっこ
-            Moving_C.jump_down()
-            #ゴール後ぴょんぴょん
-            if chk_goal_C == True:
-                Moving_C.i = 0
-                if SOUSA_MODE == 1 or SOUSA_MODE == 2:
-                    if key[pygame.K_k] == True: #<===============================================
-                        if Moving_C.y == Moving_C.ground - Moving_C.h: #150 甘奈上角のy座標 
-                            se_jump.play()  
-                            Moving_C.jump()
-                            Moving_C.jump_flag()
-
-                if SOUSA_MODE == 3 or SOUSA_MODE == 4:
-                    if key[pygame.K_COLON] == True: #<===============================================
-                        if Moving_C.y == Moving_C.ground - Moving_C.h: #150 甘奈上角のy座標 
-                            se_jump.play()  
-                            Moving_C.jump()
-                            Moving_C.jump_flag()
-
-                if Moving_C.canJump == False and Moving_C.land == False:
-                    Moving_C.i = 1
-
-                    Moving_C.jump_down()
-            #ゴール後ぴょんぴょん
-
+            Moving_C.move_chikiyu()
 #====================甜花=======================================================
-
         # キャラの描画
             Moving_T.draw_chara(screen)
             #print(Moving_T.y)
@@ -2407,97 +2889,12 @@ async def main():
                     chk_goal_T = True
             #print(chk_0_A)　チェック用
         #ここまで床
-
             key = pygame.key.get_pressed()
-
-            if chk_goal_T == False:
-        #ここからジャンプ
-                if Moving_T.canJump == True and Moving_T.land == True:
-                    if SOUSA_MODE == 1 or SOUSA_MODE == 2:
-                        if key[pygame.K_l] == True: #<===============================================
-                            if Moving_T.y == Moving_T.ground - Moving_T.h: #150 甘奈上角のy座標 
-                                se_jump.play()  
-                                Moving_T.jump()
-                                Moving_T.jump_flag()
-
-                    if SOUSA_MODE == 3 or SOUSA_MODE == 4:
-                        if key[pygame.K_RIGHTBRACKET] == True: #<===============================================
-                            if Moving_T.y == Moving_T.ground - Moving_T.h: #150 甘奈上角のy座標 
-                                se_jump.play()  
-                                Moving_T.jump()
-                                Moving_T.jump_flag()
-                    
-                    #落下音
-                    if Moving_T.y == Moving_T.ground - Moving_T.height + 5:
-                        se_fall.play()
-
-                if Moving_T.canJump == False and Moving_T.land == False:
-                    Moving_T.i = 1
-
-                    Moving_T.jump_down()
-
-            Moving_T.t_canjump -= 1
-
-            if Moving_T.t_canjump == 0:
-                Moving_T.jump_reset()
-        #ここまでジャンプ
-
-        #反対ごっこ
-            if SOUSA_MODE == 1 or SOUSA_MODE == 3:
-                if key[pygame.K_a] == True and Moving_T.canTurn == True: #<===============================================
-                    Moving_T.turn_chara() #反対ごっこ
-                    Moving_T.turn_flag() #次の反対ごっこまでの猶予
-                    se_turn.play()
-            
-            if SOUSA_MODE == 2 or SOUSA_MODE == 4:
-                if key[pygame.K_d] == True and Moving_T.canTurn == True: #<===============================================
-                    Moving_T.turn_chara() #反対ごっこ
-                    Moving_T.turn_flag() #次の反対ごっこまでの猶予
-                    se_turn.play()
-
-            if stage == 5:
-                RN_A = random.randint(1, 1000)
-                if RN_A == 1:
-                    Moving_T.turn_chara() #反対ごっこ
-                    Moving_T.turn_flag() #次の反対ごっこまでの猶予
-                    se_turn.play()
-        
-            Moving_T.t_turn -= 1 #タイマーを起動
-
-            if Moving_T.t_turn == 0: #タイマーが0で
-                Moving_T.turn_reset() #ターン出来るようにする
-
-                Moving_T.jump_down()
-        #ここまで反対ごっこ
-
-            #ゴール後ぴょんぴょん
-            if chk_goal_T == True:
-                Moving_T.i = 0
-                if SOUSA_MODE == 1 or SOUSA_MODE == 2:
-                    if key[pygame.K_l] == True: #<===============================================
-                        if Moving_T.y == Moving_T.ground - Moving_T.h: #150 甘奈上角のy座標 
-                            se_jump.play()  
-                            Moving_T.jump()
-                            Moving_T.jump_flag()
-
-                if SOUSA_MODE == 3 or SOUSA_MODE == 4:
-                    if key[pygame.K_RIGHTBRACKET] == True: #<===============================================
-                        if Moving_T.y == Moving_T.ground - Moving_T.h: #150 甘奈上角のy座標 
-                            se_jump.play()  
-                            Moving_T.jump()
-                            Moving_T.jump_flag()
-
-                if Moving_T.canJump == False and Moving_T.land == False:
-                    Moving_T.i = 1
-
-                    Moving_T.jump_down()
-            #ゴール後ぴょんぴょん
-
+            Moving_T.move_tenka()
 #===========================================================================
-
             #固定
             Life.life_draw(screen)
-            Txt.text_draw("STAGE " + str(stage), WHITE, 25, 390, 30, screen)
+            Txt.text_draw("STAGE  " + str(stage), WHITE, 25, 390, 30, screen)
             Txt.text_draw("MENTAL: ", WHITE, 25, 75, 30, screen)
 
             Moving_A.rect_x_update()
@@ -2534,28 +2931,45 @@ async def main():
 
             #固定
 
-        if index == 2: #ミス、ゲームオーバー #済
+        if index == 2: #ミス、ゲームオーバー
             pygame.mixer.music.stop()
-
-            if stage == 1 or stage == 2:
-                screen.fill(StCre.BLUE)
-
-            if stage == 3 or stage == 4:
-                screen.fill(StCre.BLACK) 
-
-            if stage == 5 or stage == 6:
-                screen.fill(StCre.PINK) 
-
-            #BACK = pygame.image.load("touka.png")
-            #screen.blit(BACK, (0, 0)) 
             
-            StCre.create_stage(screen)
+            #通常モード
+            if endless_flag == False:
+                if stage == 1 or stage == 2:
+                    screen.fill(StCre.BLUE)
+
+                elif stage == 3 or stage == 4:
+                    screen.fill(StCre.BLACK) 
+
+                elif stage == 5 or stage == 6:
+                    screen.fill(StCre.PINK)
+                
+                StCre.create_stage(screen)
+            
+            #エンドレスモード
+            if endless_flag == True:
+                if stage%6 == 1 or stage%6 == 2:
+                    screen.fill(StCre.BLUE)
+                    S_Random.stage_scrool2()
+                    S_Random.create_stage(screen)
+                
+                if stage%6 == 3 or stage%6 == 4:
+                    screen.fill(StCre.BLACK)
+                    S_Random.stage_scrool2()
+                    S_Random.create_stage(screen)
+                
+                if stage%6 == 5 or stage%6 == 0:
+                    screen.fill(StCre.PINK)
+                    S_Random.stage_scrool2()
+                    S_Random.create_stage(screen)
+
             Moving_A.draw_chara(screen)
             Moving_C.draw_chara(screen)
             Moving_T.draw_chara(screen)
 
             Life.life_draw(screen)
-            Txt.text_draw("STAGE " + str(stage), WHITE, 25, 390, 30, screen)
+            Txt.text_draw("STAGE  " + str(stage), WHITE, 25, 390, 30, screen)
             Txt.text_draw("MENTAL: ", WHITE, 25, 75, 30, screen)
 
             StCre.x_road += 0
@@ -2576,12 +2990,19 @@ async def main():
                     chk_goal_T = False
                     chk_Lastgoal_T = False
 
-                    StCre.__init__()
-
                     chk_goal = False
                     fall_flag = False
 
-                    index = 1
+                    if endless_flag == False:
+                        index = 1
+                        StCre.__init__()
+                    elif endless_flag == True:
+                        S_Random.x_road = 0
+                        #S_Random = Stage_Create_RN()
+                        #print(S_Random.map_data)
+                        
+                        index = 10
+
                     tmr_music = 0
 
                     #print(Life.life)
@@ -2598,21 +3019,41 @@ async def main():
                 key = pygame.key.get_pressed()
                 
                 if key[pygame.K_SPACE] == True:
-                    t_key = 30    
-                    index = 0
+                    S_Random.x_road = 0
+                    t_key = 80
+                    if endless_flag == False:
+                        index = 0
+
+                    elif endless_flag == True:
+                        index = 7
 
         if index == 4: #ステージクリア #済
-            if stage == 1 or stage == 2:
-                screen.fill(StCre.BLUE)
+            #通常モード
+            if endless_flag == False:
+                if stage == 1 or stage == 2:
+                    screen.fill(StCre.BLUE)
 
-            if stage == 3 or stage == 4:
-                screen.fill(StCre.BLACK)
+                elif stage == 3 or stage == 4:
+                    screen.fill(StCre.BLACK) 
 
-            if stage == 5 or stage == 6:
-                screen.fill(StCre.PINK) 
+                elif stage == 5 or stage == 6:
+                    screen.fill(StCre.PINK) 
+                
+                StCre.create_stage(screen)
+            
+            #エンドレスモード
+            if endless_flag == True:
+                if stage%6 == 1 or stage%6 == 2:
+                    screen.fill(StCre.BLUE)
+                    S_Random.create_stage(screen)
 
-            #BACK = pygame.image.load("touka.png")
-            #screen.blit(BACK, (0, 0)) 
+                if stage%6 == 3 or stage%6 == 4:
+                    screen.fill(StCre.BLACK)
+                    S_Random.create_stage(screen)
+
+                if stage%6 == 5 or stage%6 == 0:
+                    screen.fill(StCre.PINK)
+                    S_Random.create_stage(screen)
 
             Moving_A.t_jump += 1
             Moving_C.t_jump += 1
@@ -2630,8 +3071,6 @@ async def main():
             Moving_C.draw_chara(screen)
             Moving_T.draw_chara(screen)
             Life.life_draw(screen)
-
-            StCre.create_stage(screen)
 
             Moving_A.rect_x_update()
             Moving_C.rect_x_update()
@@ -2655,32 +3094,61 @@ async def main():
                 chk_goal = False
 
                 StCre.__init__()
+                if endless_flag == False:
+                    if stage == 3:
+                        #S_Random = Stage_Create_RN()
+                        S_Random.set_stage(4, 4)
+                        generated = S_Random.map_data
 
-                if stage == 3:
-                    s_random = Stage_Create_RN()
-                    s_random.set_stage(4, 4)
-                    generated = s_random.map_data
+                    elif stage == 5:
+                        #S_Random = Stage_Create_RN()
+                        S_Random.set_stage(5, 5)
+                        generated2 = S_Random.map_data
 
-                if stage == 5:
-                    s_random = Stage_Create_RN()
-                    s_random.set_stage(5, 5)
-                    generated2 = s_random.map_data
+                    elif stage == 6:
+                        index = 6
+                        chk_Lastgoal_C = False
+                        chk_Lastgoal_T = False
+                    
+                    if stage <= 5:
+                        index = 5
+                        life += 1 
+                        stage += 1
+                
+                elif endless_flag == True:
+                    if stage%6 == 1 or stage%6 == 2:
+                        pygame.mixer.music.load("arusutoromeria.ogg")
+                        S_Random.set_stage_endless(1, 5)
+                        generated = S_Random.map_data
 
-                if stage == 6:
-                    index = 6
-                    chk_Lastgoal_C = False
-                    chk_Lastgoal_T = False
+                    elif stage%6 == 3 or stage%6 == 4:
+                        pygame.mixer.music.load("arusutoromeria.ogg")
+                        S_Random.set_stage_endless(4, 5)
+                        generated = S_Random.map_data
 
-                if stage <= 5:
-                    index = 5
-                    life += 1 
-                    stage += 1
+                    elif stage%6 == 5 or stage%6 == 0:
+                        pygame.mixer.music.load("bloomy.ogg")
+                        S_Random.set_stage_endless(5, 5)
+                        generated = S_Random.map_data
 
-            Txt.text_draw("STAGE " + str(stage), WHITE, 25, 390, 30, screen)
+                    S_Random.x_road = 0
+                    tmr_music = 0
+                    
+                    if stage == 99:
+                        index = 7
+                    stage += 1  
+                    index = 10              
+
+            Txt.text_draw("STAGE  " + str(stage), WHITE, 25, 390, 30, screen)
             Txt.text_draw("MENTAL: ", WHITE, 25, 75, 30, screen)
-            if stage == 6:
-                pass
-            elif stage <= 5:
+            
+            if endless_flag == False:
+                if stage == 6:
+                    pass
+                elif stage <= 5:
+                    Txt.text_draw("UMASTROMERIA!", PINK, 48, 240, 180, screen)
+
+            elif endless_flag == True:
                 Txt.text_draw("UMASTROMERIA!", PINK, 48, 240, 180, screen)
 
         if index == 5:#アイキャッチ
@@ -2809,12 +3277,18 @@ async def main():
             
         if index == 7: #済
             #pygame.mixer.music.stop()
+            key = pygame.key.get_pressed()
+
             screen.fill((0,0,0))
             en_timer2 -= 1
             en_timer3 -= 1
 
             screen.blit(StCre.block[7], (210, 200))
             En.text_draw_center("THANK YOU FOR PLAYING!", (255,255,255), 32, 240, 100, screen)
+            #En.text_draw_center("POST YOUR RESULT ON X TO PRESS [X]!", (255,255,255), 20, 240, 240, screen)
+    
+            if endless_flag == True:
+                Txt.text_draw("POST YOUR RESULT ON X TO PRESS [X]!", WHITE, 24, 240, 280, screen)
 
             Moving_CE.draw_chara(screen)
 
@@ -2831,398 +3305,280 @@ async def main():
                 if en_ind7 >= 4:
                     stop_ce = False
                     en_ind7 = 4
+            if endless_flag == False:
+                if en_timer3 == 0:
+                    index = 0
+            elif endless_flag == True:
+                if t_key < 0:
+                    t_key = 0
+                    if key[pygame.K_SPACE] == True:
+                        t_key = 80
+                        index = 0
 
-            if en_timer3 == 0:
-                index = 0
-                
+                if key[pygame.K_x] == True:
+                    text =  'エンドレスモードでアルストロメリアはステージ'+ str(stage) + 'まで到達！\n' \
+                            '#反対ごっこでこんがらがって\n' \
+                            '#非公式ゲーム\n' \
+                            'https://yararato.github.io/congaragatte/'
+                    url_text = urllib.parse.quote(text)
+                    url = f'https://x.com/intent/post?text={url_text}'
+                    webbrowser.open(url)
 
             Moving_CE.rect_x_update()
         
-        if index == 8: #マニュアル #済
+        if index == 8: #マニュアル
 
             screen.fill(StCre.BLUE)
-
-            for i in range(6):
-                screen.blit(StCre.block[1], (330 + 25 * i, 125))
-
-            for i in range(6):
-                screen.blit(StCre.block[1], (330 + 25 * i, 225))
-
-            for i in range(6):
-                screen.blit(StCre.block[1], (330 + 25 * i, 325))
+            for j in range(3):
+                for i in range(6):
+                    screen.blit(StCre.block[1], (330 + 25 * i, 125 + 100*j))
             
-#=======甘奈=====================================================================
+            #=======甘奈=====================================================================
             Moving_AT.draw_chara(screen)
-
-            key = pygame.key.get_pressed()
-
-            Moving_AT.t_move += 1
-            Moving_AT.t_jump += 1
-            Moving_AT.t_draw += 1
-        #ここからジャンプ
-            if Moving_AT.canJump == True and Moving_AT.land == True:
-                if SOUSA_MODE == 1 or SOUSA_MODE == 2:
-                    if key[pygame.K_j] == True: #<===============================================
-                        if Moving_AT.y == Moving_AT.ground - Moving_AT.h: #150 甘奈上角のy座標 
-                            se_jump.play()  
-                            Moving_AT.jump()
-                            Moving_AT.jump_flag()
-
-                if SOUSA_MODE == 3 or SOUSA_MODE == 4:
-                    if key[pygame.K_SEMICOLON] == True: #<===============================================
-                        if Moving_AT.y == Moving_AT.ground - Moving_AT.h: #150 甘奈上角のy座標 
-                            se_jump.play()  
-                            Moving_AT.jump()
-                            Moving_AT.jump_flag()
-
-            Moving_AT.t_canjump -= 1
-
-            if Moving_AT.t_canjump == 0:
-                Moving_AT.jump_reset()
-            
-        #ここまでジャンプ
-        
-        #反対ごっこ
-            if SOUSA_MODE == 1 or SOUSA_MODE == 3:
-                if key[pygame.K_d] == True and Moving_AT.canTurn == True:  #<===============================================   
-                    Moving_AT.turn_chara() #反対ごっこ
-                    Moving_AT.turn_flag() #次の反対ごっこまでの猶予
-                    se_turn.play()
-            
-            if SOUSA_MODE == 2 or SOUSA_MODE == 4:
-                if key[pygame.K_a] == True and Moving_AT.canTurn == True:  #<===============================================   
-                    Moving_AT.turn_chara() #反対ごっこ
-                    Moving_AT.turn_flag() #次の反対ごっこまでの猶予
-                    se_turn.play()
-
-            Moving_AT.t_turn -= 1 #タイマーを起動
-
-            if Moving_AT.t_turn == 0: #タイマーが0で
-                Moving_AT.turn_reset() #ターン出来るようにする
-        #ここまで反対ごっこ
-            Moving_AT.jump_down()
-
-            Moving_AT.rect_x_update()
-            Moving_AT.rect_y_update() 
-
-#=======ちきゆ=====================================================================
+            Moving_AT.move_amana()
+            #=======ちきゆ=====================================================================
             Moving_CT.draw_chara(screen)
-
-            key = pygame.key.get_pressed()
-
-            Moving_CT.t_move += 1
-            Moving_CT.t_jump += 1
-            Moving_CT.t_draw += 1
-        #ここからジャンプ
-            if Moving_CT.canJump == True and Moving_CT.land == True:
-                if SOUSA_MODE == 1 or SOUSA_MODE == 2:
-                    if key[pygame.K_k] == True: #<===============================================
-                        if Moving_CT.y == Moving_CT.ground - Moving_CT.h: #150 甘奈上角のy座標 
-                            se_jump.play()  
-                            Moving_CT.jump()
-                            Moving_CT.jump_flag()
-
-                if SOUSA_MODE == 3 or SOUSA_MODE == 4:
-                    if key[pygame.K_COLON] == True: #<===============================================
-                        if Moving_CT.y == Moving_CT.ground - Moving_CT.h: #150 甘奈上角のy座標 
-                            se_jump.play()  
-                            Moving_CT.jump()
-                            Moving_CT.jump_flag()
-
-            Moving_CT.t_canjump -= 1
-
-            if Moving_CT.t_canjump == 0:
-                Moving_CT.jump_reset()
-            
-        #ここまでジャンプ
-        
-        #反対ごっこ
-            if key[pygame.K_s] == True and Moving_CT.canTurn == True: #<===============================================    
-                Moving_CT.turn_chara() #反対ごっこ
-                Moving_CT.turn_flag() #次の反対ごっこまでの猶予
-                se_turn.play()
-            
-            Moving_CT.t_turn -= 1 #タイマーを起動
-
-            if Moving_CT.t_turn == 0: #タイマーが0で
-                Moving_CT.turn_reset() #ターン出来るようにする
-        #ここまで反対ごっこ
-            Moving_CT.jump_down()
-
-            Moving_CT.rect_x_update()
-            Moving_CT.rect_y_update()
-
-#=======甜花=====================================================================
+            Moving_CT.move_chikiyu()
+            #=======甜花=====================================================================
             Moving_TT.draw_chara(screen)
-
-            key = pygame.key.get_pressed()
-
-            Moving_TT.t_move += 1
-            Moving_TT.t_jump += 1
-            Moving_TT.t_draw += 1
-        #ここからジャンプ
-            if Moving_TT.canJump == True and Moving_TT.land == True:
-                if SOUSA_MODE == 1 or SOUSA_MODE == 2:
-                    if key[pygame.K_l] == True: #<===============================================
-                        if Moving_TT.y == Moving_TT.ground - Moving_TT.h: #150 甘奈上角のy座標 
-                            se_jump.play()  
-                            Moving_TT.jump()
-                            Moving_TT.jump_flag()
-
-                if SOUSA_MODE == 3 or SOUSA_MODE == 4:
-                    if key[pygame.K_RIGHTBRACKET] == True: #<===============================================
-                        if Moving_TT.y == Moving_TT.ground - Moving_TT.h: #150 甘奈上角のy座標 
-                            se_jump.play()  
-                            Moving_TT.jump()
-                            Moving_TT.jump_flag()
-
-            Moving_TT.t_canjump -= 1
-
-            if Moving_TT.t_canjump == 0:
-                Moving_TT.jump_reset()
-            
-        #ここまでジャンプ
-        
-        #反対ごっこ
-            if SOUSA_MODE == 1 or SOUSA_MODE == 3:
-                if key[pygame.K_a] == True and Moving_TT.canTurn == True: #<===============================================
-                    Moving_TT.turn_chara() #反対ごっこ
-                    Moving_TT.turn_flag() #次の反対ごっこまでの猶予
-                    se_turn.play()
-            
-            if SOUSA_MODE == 2 or SOUSA_MODE == 4:
-                if key[pygame.K_d] == True and Moving_TT.canTurn == True: #<===============================================
-                    Moving_TT.turn_chara() #反対ごっこ
-                    Moving_TT.turn_flag() #次の反対ごっこまでの猶予
-                    se_turn.play()
-
-            Moving_TT.t_turn -= 1 #タイマーを起動
-
-            if Moving_TT.t_turn == 0: #タイマーが0で
-                Moving_TT.turn_reset() #ターン出来るようにする
-        #ここまで反対ごっこ
-            Moving_TT.jump_down()
-
-            Moving_TT.rect_x_update()
-            Moving_TT.rect_y_update()
-#============================================================================
+            Moving_TT.move_tenka()
+            #============================================================================
             En.tuto_rial(screen)
-            
-            t_key -= 1
-            
-            if t_key <= 0:
-                t_key = 0
-                if key[pygame.K_LEFT] == True:
-                    tuto_ind -= 1
-                    t_key = 10
-                if key[pygame.K_RIGHT] == True:
-                    tuto_ind += 1
-                    t_key = 10
-
-                if key[pygame.K_SPACE] == True:
-                    index = 0
-                    t_key = 10
-
-            if tuto_ind <= 1:
-                tuto_ind = 1
-            if tuto_ind >= 3:
-                tuto_ind = 3
+            En.tuto_sentaku()
 
         if index == 9: #コンフィグ #済
 
             screen.fill(StCre.BLUE)
 
-            for i in range(6):
-                screen.blit(StCre.block[1], (330 + 25 * i, 125))
-
-            for i in range(6):
-                screen.blit(StCre.block[1], (330 + 25 * i, 225))
-
-            for i in range(6):
-                screen.blit(StCre.block[1], (330 + 25 * i, 325))
+            screen.fill(StCre.BLUE)
+            for j in range(3):
+                for i in range(6):
+                    screen.blit(StCre.block[1], (330 + 25 * i, 125 + 100*j))
             
-
-#=======甘奈=====================================================================
+            #=======甘奈=====================================================================
             Moving_AT.draw_chara(screen)
-
-            key = pygame.key.get_pressed()
-
-            Moving_AT.t_move += 1
-            Moving_AT.t_jump += 1
-            Moving_AT.t_draw += 1
-        #ここからジャンプ
-            if Moving_AT.canJump == True and Moving_AT.land == True:
-                if SOUSA_MODE == 1 or SOUSA_MODE == 2:
-                    if key[pygame.K_j] == True: #<===============================================
-                        if Moving_AT.y == Moving_AT.ground - Moving_AT.h: #150 甘奈上角のy座標 
-                            se_jump.play()  
-                            Moving_AT.jump()
-                            Moving_AT.jump_flag()
-
-                if SOUSA_MODE == 3 or SOUSA_MODE == 4:
-                    if key[pygame.K_SEMICOLON] == True: #<===============================================
-                        if Moving_AT.y == Moving_AT.ground - Moving_AT.h: #150 甘奈上角のy座標 
-                            se_jump.play()  
-                            Moving_AT.jump()
-                            Moving_AT.jump_flag()
-
-            Moving_AT.t_canjump -= 1
-
-            if Moving_AT.t_canjump == 0:
-                Moving_AT.jump_reset()
-            
-        #ここまでジャンプ
-        
-        #反対ごっこ
-            if SOUSA_MODE == 1 or SOUSA_MODE == 3:
-                if key[pygame.K_d] == True and Moving_AT.canTurn == True:  #<===============================================   
-                    Moving_AT.turn_chara() #反対ごっこ
-                    Moving_AT.turn_flag() #次の反対ごっこまでの猶予
-                    se_turn.play()
-            
-            if SOUSA_MODE == 2 or SOUSA_MODE == 4:
-                if key[pygame.K_a] == True and Moving_AT.canTurn == True:  #<===============================================   
-                    Moving_AT.turn_chara() #反対ごっこ
-                    Moving_AT.turn_flag() #次の反対ごっこまでの猶予
-                    se_turn.play()
-
-            Moving_AT.t_turn -= 1 #タイマーを起動
-
-            if Moving_AT.t_turn == 0: #タイマーが0で
-                Moving_AT.turn_reset() #ターン出来るようにする
-        #ここまで反対ごっこ
-            Moving_AT.jump_down()
-
-            Moving_AT.rect_x_update()
-            Moving_AT.rect_y_update() 
-
-#=======ちきゆ=====================================================================
+            Moving_AT.move_amana()
+            #=======ちきゆ=====================================================================
             Moving_CT.draw_chara(screen)
-
-            key = pygame.key.get_pressed()
-
-            Moving_CT.t_move += 1
-            Moving_CT.t_jump += 1
-            Moving_CT.t_draw += 1
-        #ここからジャンプ
-            if Moving_CT.canJump == True and Moving_CT.land == True:
-                if SOUSA_MODE == 1 or SOUSA_MODE == 2:
-                    if key[pygame.K_k] == True: #<===============================================
-                        if Moving_CT.y == Moving_CT.ground - Moving_CT.h: #150 甘奈上角のy座標 
-                            se_jump.play()  
-                            Moving_CT.jump()
-                            Moving_CT.jump_flag()
-
-                if SOUSA_MODE == 3 or SOUSA_MODE == 4:
-                    if key[pygame.K_COLON] == True: #<===============================================
-                        if Moving_CT.y == Moving_CT.ground - Moving_CT.h: #150 甘奈上角のy座標 
-                            se_jump.play()  
-                            Moving_CT.jump()
-                            Moving_CT.jump_flag()
-
-            Moving_CT.t_canjump -= 1
-
-            if Moving_CT.t_canjump == 0:
-                Moving_CT.jump_reset()
-            
-        #ここまでジャンプ
-        
-        #反対ごっこ
-            if key[pygame.K_s] == True and Moving_CT.canTurn == True: #<===============================================    
-                Moving_CT.turn_chara() #反対ごっこ
-                Moving_CT.turn_flag() #次の反対ごっこまでの猶予
-                se_turn.play()
-            
-            Moving_CT.t_turn -= 1 #タイマーを起動
-
-            if Moving_CT.t_turn == 0: #タイマーが0で
-                Moving_CT.turn_reset() #ターン出来るようにする
-        #ここまで反対ごっこ
-            Moving_CT.jump_down()
-
-            Moving_CT.rect_x_update()
-            Moving_CT.rect_y_update()
-
-#=======甜花=====================================================================
+            Moving_CT.move_chikiyu()
+            #=======甜花=====================================================================
             Moving_TT.draw_chara(screen)
+            Moving_TT.move_tenka()
+            #============================================================================
+            En.config(screen)
+            En.config_sentaku()
 
+        if index == 10: #エンドレスモード
+            #音楽
+            if tmr_music == 1:
+                pygame.mixer.music.play(-1)
+
+            #背景
+            if stage%6 == 1 or stage%6 == 2:
+                screen.fill(StCre.BLUE)
+
+            elif stage%6 == 3 or stage%6 == 4:
+                screen.fill(StCre.BLACK)
+
+            elif stage%6 == 5 or stage%6 == 0:
+                screen.fill(StCre.PINK)
+        #甘奈        
+            Moving_A.t_move += 1
+            Moving_A.t_jump += 1
+            Moving_A.t_draw += 1
+        #ちきゆ        
+            Moving_C.t_move += 1
+            Moving_C.t_jump += 1
+            Moving_C.t_draw += 1
+        #甜花        
+            Moving_T.t_move += 1
+            Moving_T.t_jump += 1
+            Moving_T.t_draw += 1
+
+            if stage%6 == 1 or stage%6 == 2:
+                S_Random.stage_scrool2()
+                S_Random.create_stage(screen)
+            elif stage%6 == 3 or stage%6 == 4:
+                S_Random.stage_scrool2()
+                S_Random.create_stage(screen)
+            elif stage%6 == 5 or stage%6 == 0:
+                S_Random.stage_scrool2()
+                S_Random.create_stage(screen)
+        #====================甘奈=======================================================
+        # キャラの描画
+            Moving_A.draw_chara(screen)        
+        #床の判定(なんか関数に出来ない)
+            StA = S_Random.map_data[0]
+            #print(StA)　#チェック用
+
+            if Moving_A.turn_int == -1: #左向き
+                if chk_goal_A == False:                
+                    B = int((Moving_A.x_amana + S_Random.x_road)/25) #左向きの右寄り
+                    #C = int((Moving_A.x_amana + StCre.x_road)/100 + 1) #左向きの左寄り
+
+                if chk_goal_A == False:                
+                    B = int((Moving_A.x_amana + S_Random.x_road)/25)
+                    #print(B)　チェック用
+                    if StA[B] == 0 and StA[B+1] == 0:
+                        chk_0_A = False
+
+                    elif StA[B] == 6:
+                        Moving_A.canJump = False
+
+                    elif StA[B] == 3:
+                        chk_goal_A = True
+
+                    else:
+                        chk_0_A = True
+
+            if Moving_A.turn_int == 1: #右向き
+                if chk_goal_A == False: 
+                    A = int((Moving_A.x_amana + S_Random.x_road )/25)
+                #print(A)　チェック用
+                    if StA[A] == 0:
+                        chk_0_A = False
+                    if StA[A] == 1 or StA[A] == 2 or StA[A] == 4 or StA[A] == 5:
+                        chk_0_A = True
+                
+                    if StA[A] == 3:
+                        chk_goal_A = True
+                #print(chk_0_A)　チェック用
+        #ここまで床
+            key = pygame.key.get_pressed()
+            Moving_A.move_amana()
+        #====================ちきゆ=======================================================
+        # キャラの描画
+            Moving_C.draw_chara(screen)
+        #床の判定(なんか関数に出来ない)
+            StC = S_Random.map_data[1]
+            #print(StC) #チェック用
+
+            if Moving_C.turn_int == -1:
+                if chk_goal_C == False:                
+                    B = int((Moving_C.x_amana + S_Random.x_road)/25)
+                    #print(B)　チェック用
+                    if StC[B] == 0 and StC[B+1] == 0:
+                        chk_0_C = False
+
+                    elif StC[B] == 6:
+                        Moving_C.canJump = False
+                        chk_Lastgoal_C = True  
+
+                    elif StC[B] == 3:
+                        chk_goal_C = True
+                    else:
+                        chk_0_C = True
+
+            if Moving_C.turn_int == 1:
+                A = int((Moving_C.x_amana + S_Random.x_road )/25)
+            #print(A)　チェック用
+                if StC[A] == 0:
+                    chk_0_C = False
+                if StC[A] == 1 or StC[A] == 2 or StC[A] == 4 or StC[A] == 5:
+                    chk_0_C = True
+                
+                if StC[A] == 3:
+                    chk_goal_C = True
+
+                if StC[A] == 6:
+                    Moving_C.canJump = False
+                    chk_Lastgoal_C = True
+            #print(chk_0_A)　チェック用
+        #ここまで床
             key = pygame.key.get_pressed()
 
-            Moving_TT.t_move += 1
-            Moving_TT.t_jump += 1
-            Moving_TT.t_draw += 1
-        #ここからジャンプ
-            if Moving_TT.canJump == True and Moving_TT.land == True:
-                if SOUSA_MODE == 1 or SOUSA_MODE == 2:
-                    if key[pygame.K_l] == True: #<===============================================
-                        if Moving_TT.y == Moving_TT.ground - Moving_TT.h: #150 甘奈上角のy座標 
-                            se_jump.play()  
-                            Moving_TT.jump()
-                            Moving_TT.jump_flag()
-
-                if SOUSA_MODE == 3 or SOUSA_MODE == 4:
-                    if key[pygame.K_RIGHTBRACKET] == True: #<===============================================
-                        if Moving_TT.y == Moving_TT.ground - Moving_TT.h: #150 甘奈上角のy座標 
-                            se_jump.play()  
-                            Moving_TT.jump()
-                            Moving_TT.jump_flag()
-
-            Moving_TT.t_canjump -= 1
-
-            if Moving_TT.t_canjump == 0:
-                Moving_TT.jump_reset()
-            
-        #ここまでジャンプ
+            Moving_C.move_chikiyu()
+        #====================甜花=======================================================
+        # キャラの描画
+            Moving_T.draw_chara(screen)
+            #print(Moving_T.y)
         
-        #反対ごっこ
-            if SOUSA_MODE == 1 or SOUSA_MODE == 3:
-                if key[pygame.K_a] == True and Moving_TT.canTurn == True: #<===============================================
-                    Moving_TT.turn_chara() #反対ごっこ
-                    Moving_TT.turn_flag() #次の反対ごっこまでの猶予
-                    se_turn.play()
+        #床の判定(なんか関数に出来ない)
+            StT = S_Random.map_data[2]
+            #print(StT)　#チェック用
             
-            if SOUSA_MODE == 2 or SOUSA_MODE == 4:
-                if key[pygame.K_d] == True and Moving_TT.canTurn == True: #<===============================================
-                    Moving_TT.turn_chara() #反対ごっこ
-                    Moving_TT.turn_flag() #次の反対ごっこまでの猶予
-                    se_turn.play()
+            if Moving_T.turn_int == -1:
+                if chk_goal_T == False:                
+                    B = int((Moving_T.x_amana + S_Random.x_road)/25)
+                    #print(B)　チェック用
+                    if  StT[B] == 0 and StT[B+1] == 0:
+                        chk_0_T = False
 
-            Moving_TT.t_turn -= 1 #タイマーを起動
+                    elif StT[B] == 6:
+                        Moving_T.canJump = False
+                        chk_Lastgoal_T = True  
 
-            if Moving_TT.t_turn == 0: #タイマーが0で
-                Moving_TT.turn_reset() #ターン出来るようにする
-        #ここまで反対ごっこ
-            Moving_TT.jump_down()
+                    elif StT[B] == 3:
+                        chk_goal_T = True
 
-            Moving_TT.rect_x_update()
-            Moving_TT.rect_y_update()
-#============================================================================
-            En.config(screen)
+                    else:
+                        chk_0_T = True
 
-            if t_key <= 0:
-                t_key = 0
-                if key[pygame.K_LEFT] == True:
-                    SOUSA_MODE -= 1
-                    t_key = 10
-                if key[pygame.K_RIGHT] == True:
-                    SOUSA_MODE += 1
-                    t_key = 10
+            if Moving_T.turn_int == 1:
+                A = int((Moving_T.x_amana + S_Random.x_road )/25)
+            #print(A)　チェック用
+                if StT[A] == 0:
+                    chk_0_T = False
+                if StT[A] == 1 or StT[A] == 2 or StT[A] == 4 or StT[A] == 5:
+                    chk_0_T = True
 
-                if key[pygame.K_SPACE] == True:
-                    index = 0
-                    t_key = 10
+                if StT[A] == 6:
+                    Moving_T.canJump = False
+                    chk_Lastgoal_T = True                
 
-            if SOUSA_MODE < 1:
-                SOUSA_MODE = 2
-            if SOUSA_MODE > 2:
-                SOUSA_MODE = 1
+                if StT[A] == 3:
+                    chk_goal_T = True
+            #print(chk_0_A)　チェック用
+        #ここまで床
+            key = pygame.key.get_pressed()
+            Moving_T.move_tenka()
+        #===========================================================================
+            #固定
+            Life.life_draw(screen)
+            Txt.text_draw("STAGE  " + str(stage), WHITE, 25, 390, 30, screen)
+            Txt.text_draw("MENTAL: ", WHITE, 25, 75, 30, screen)
+
+            Moving_A.rect_x_update()
+            Moving_A.rect_y_update()
+
+            Moving_C.rect_x_update()
+            Moving_C.rect_y_update()
+
+            Moving_T.rect_x_update()
+            Moving_T.rect_y_update()
+
+            if chk_goal == True and \
+                chk_goal_A == True and\
+                chk_goal_C == True and\
+                chk_goal_T == True:
+                if stage == 99:
+                    index = 7
+                index = 4
+                tmr_music = 0
+
+        if index == 11:
+            screen.fill((255,255,255))
+
+            En.text_draw_left('・このゲームは', ((0,0,0)), 20, 50, 60, screen)
+            En.text_draw_left('　アイドルマスターシャイニーカラーズの', ((0,0,0)), 20, 50, 90, screen)
+            En.text_draw_left('　非公式ゲームです', ((0,0,0)), 20, 50, 120, screen)
+            En.text_draw_left('', ((0,0,0)), 20, 50, 150, screen)
+            En.text_draw_left('・ゲーム中に原作内のイベント', ((0,0,0)), 20, 50, 210, screen)
+            En.text_draw_left('  「薄桃色にこんがらがって」の', ((0,0,0)), 20, 50, 240, screen)
+            En.text_draw_left('　ネタバレがあります', ((0,0,0)), 20, 50, 270, screen)
+
+            if t_key == 0:
+                t_key = 20
+                index = 0 
 
 #======================================================
         tmr_music += 1
         t_key -= 1
+        #print(mt_key)
 
         pygame.display.update()        
         clock.tick(30)
         await asyncio.sleep(0)
 
 asyncio.run(main())
+
