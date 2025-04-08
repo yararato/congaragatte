@@ -3029,7 +3029,8 @@ async def main():
                     S_Random.x_road = 0
                     t_key = 80
                     if endless_flag == False:
-                        index = 0
+                     title_chara = random.randint(0,2)   
+                     index = 0
 
                     elif endless_flag == True:
                         index = 7
@@ -3314,11 +3315,13 @@ async def main():
                     en_ind7 = 4
             if endless_flag == False:
                 if en_timer3 == 0:
+                    title_chara = random.randint(0,2)
                     index = 0
             elif endless_flag == True:
                 if t_key < 0:
                     t_key = 0
                     if key[pygame.K_SPACE] == True:
+                        title_chara = random.randint(0,2)
                         t_key = 80
                         index = 0
 
