@@ -2586,7 +2586,7 @@ async def main():
 
     #説明用
     tuto_ind = 1
-    t_key = 30
+    t_key = 20
     tmr = 0
 
     #エンディング用
@@ -3141,7 +3141,7 @@ async def main():
                     S_Random.x_road = 0
                     tmr_music = 0
                     
-                    if stage == 99:
+                    if stage == 999:
                         index = 7
                     stage += 1    
                     index = 10              
