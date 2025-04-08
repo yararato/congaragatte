@@ -2678,8 +2678,8 @@ async def main():
 
             Txt.text_draw("START TO PRESS [SPACE]", WHITE, 20, 320, 320, screen)
 
-            if tmr == 1:
-                title_chara = random.randint(0,2)
+            #if tmr == 1:
+                #title_chara = random.randint(0,2)
 
             if title_chara == 0:
                 Moving_AT.move_amana_title()
@@ -3575,6 +3575,7 @@ async def main():
             En.text_draw_left('　ネタバレがあります', ((0,0,0)), 20, 50, 270, screen)
 
             if t_key == 0:
+                title_chara = random.randint(0,2)
                 t_key = 20
                 index = 0 
 
