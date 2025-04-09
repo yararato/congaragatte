@@ -3318,7 +3318,7 @@ async def main():
                     en_ind7 = 4
             if endless_flag == False:
                 if en_timer3 == 0:
-                    title_chara = random.randint(0,2)
+                    title_chara = random.randint(1,6)
                     index = 0
             elif endless_flag == True:
                 if t_key < 0:
