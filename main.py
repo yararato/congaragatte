@@ -2682,13 +2682,15 @@ async def main():
                 #title_chara = random.randint(0,2)
 
             if title_chara == 0:
+                Txt.text_draw(str(title_chara), WHITE, 40, 20, 300, screen)
                 Moving_AT.move_amana_title()
                 Moving_AT.draw_chara_title(screen)
             elif title_chara == 1:
-                pass
+                Txt.text_draw(str(title_chara), WHITE, 40, 20, 300, screen)
                 #Moving_CT.move_chikiyu_title()
                 #Moving_CT.draw_chara_title(screen)
             elif title_chara == 2:
+                Txt.text_draw(str(title_chara), WHITE, 40, 20, 300, screen)
                 Moving_TT.move_tenka_title()
                 Moving_TT.draw_chara_title(screen)
 
