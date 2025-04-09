@@ -2685,8 +2685,9 @@ async def main():
                 Moving_AT.move_amana_title()
                 Moving_AT.draw_chara_title(screen)
             elif title_chara == 1:
-                Moving_CT.move_chikiyu_title()
-                Moving_CT.draw_chara_title(screen)
+                pass
+                #Moving_CT.move_chikiyu_title()
+                #Moving_CT.draw_chara_title(screen)
             elif title_chara == 2:
                 Moving_TT.move_tenka_title()
                 Moving_TT.draw_chara_title(screen)
