@@ -2681,15 +2681,15 @@ async def main():
             #if tmr == 1:
             #title_chara = random.randint(0,2)
 
-            if title_chara == 0:
+            if title_chara == 1:
                 #Txt.text_draw(str(title_chara), WHITE, 40, 20, 300, screen)
                 Moving_AT.move_amana_title()
                 Moving_AT.draw_chara_title(screen)
-            elif title_chara == 1:
+            elif title_chara == 2:
                 #Txt.text_draw(str(title_chara), WHITE, 40, 20, 300, screen)
                 Moving_CT.move_chikiyu_title()
                 Moving_CT.draw_chara_title(screen)
-            elif title_chara == 2:
+            elif title_chara == 0:
                 #Txt.text_draw(str(title_chara), WHITE, 40, 20, 300, screen)
                 Moving_TT.move_tenka_title()
                 Moving_TT.draw_chara_title(screen)
@@ -3032,8 +3032,8 @@ async def main():
                     S_Random.x_road = 0
                     t_key = 80
                     if endless_flag == False:
-                     title_chara = random.randint(0,2)   
-                     index = 0
+                        title_chara = random.randint(0,2)   
+                        index = 0
 
                     elif endless_flag == True:
                         index = 7
