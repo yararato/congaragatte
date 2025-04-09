@@ -2679,7 +2679,7 @@ async def main():
             Txt.text_draw("START TO PRESS [SPACE]", WHITE, 20, 320, 320, screen)
 
             #if tmr == 1:
-                #title_chara = random.randint(0,2)
+            title_chara = random.randint(0,2)
 
             if title_chara == 0:
                 Txt.text_draw(str(title_chara), WHITE, 40, 20, 300, screen)
@@ -2687,8 +2687,8 @@ async def main():
                 Moving_AT.draw_chara_title(screen)
             elif title_chara == 1:
                 Txt.text_draw(str(title_chara), WHITE, 40, 20, 300, screen)
-                #Moving_CT.move_chikiyu_title()
-                #Moving_CT.draw_chara_title(screen)
+                Moving_CT.move_chikiyu_title()
+                Moving_CT.draw_chara_title(screen)
             elif title_chara == 2:
                 Txt.text_draw(str(title_chara), WHITE, 40, 20, 300, screen)
                 Moving_TT.move_tenka_title()
